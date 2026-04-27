@@ -32,7 +32,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("Failed to create consul registry: %v", err)
 	}
-
+//
 	// Service Config
 	serviceID := fmt.Sprintf("api-gateway-%s", os.Getenv("INSTANCE_ID"))
 	if os.Getenv("INSTANCE_ID") == "" {

@@ -102,8 +102,14 @@ jobs:
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_SSH_KEY }}
           envs: GITHUB_TOKEN
-          script_stop: true
           script: |
+            set -e
+
+            # Ensure docker is in PATH for non-interactive SSH sessions
+            export PATH=$PATH:/usr/bin:/usr/local/bin
+            source ~/.bashrc 2>/dev/null || true
+            source ~/.profile 2>/dev/null || true
+
             cd ~/deploy
 
             # Login to GitHub Container Registry
@@ -133,3 +139,4 @@ jobs:
 
             # Clean up old images
             docker image prune -f
+

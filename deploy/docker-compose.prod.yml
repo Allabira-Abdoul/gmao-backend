@@ -44,7 +44,7 @@ services:
     image: ${DOCKER_REGISTRY}/${DOCKER_IMAGE_PREFIX}-api-gateway:${IMAGE_TAG:-latest}
     container_name: api-gateway
     ports:
-      - "8080:8080"
+      - "80:8080"
     environment:
       PORT: "8080"
       CONSUL_HOST: consul

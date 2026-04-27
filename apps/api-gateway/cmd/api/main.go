@@ -32,7 +32,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("Failed to create consul registry: %v", err)
 	}
-//
+	//
 	// Service Config
 	serviceID := fmt.Sprintf("api-gateway-%s", os.Getenv("INSTANCE_ID"))
 	if os.Getenv("INSTANCE_ID") == "" {
@@ -57,6 +57,20 @@ func main() {
 
 	// Initialize Gin router
 	router := gin.Default()
+
+	// Add global security headers middleware
+	router.Use(func(c *gin.Context) {
+		// Prevent MIME type sniffing
+		c.Header("X-Content-Type-Options", "nosniff")
+		// Prevent clickjacking
+		c.Header("X-Frame-Options", "DENY")
+		// Enable XSS protection
+		c.Header("X-XSS-Protection", "1; mode=block")
+		// Enforce HTTPS (HTTP Strict Transport Security)
+		c.Header("Strict-Transport-Security", "max-age=31536000; includeSubDomains")
+
+		c.Next()
+	})
 
 	// Gateway health endpoint
 	router.GET("/health", func(c *gin.Context) {

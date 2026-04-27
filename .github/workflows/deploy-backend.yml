@@ -123,10 +123,10 @@ jobs:
               echo "Docker installed successfully."
             fi
 
-            # Ensure docker is usable without re-login (newgrp would exit the script)
+            # Ensure docker is usable without re-login
             if ! docker info &> /dev/null; then
               echo "Running docker commands with sudo..."
-              DOCKER_CMD="sudo docker"
+              DOCKER_CMD="sudo -E docker"
             else
               DOCKER_CMD="docker"
             fi
@@ -134,16 +134,18 @@ jobs:
             mkdir -p ~/deploy
             cd ~/deploy
 
+            # Create .env file for docker-compose to ensure variables are preserved across sudo
+            cat <<EOF > .env
+DOCKER_REGISTRY=ghcr.io
+DOCKER_IMAGE_PREFIX=$(echo '${{ github.repository_owner }}' | tr '[:upper:]' '[:lower:]')/backend-gmao
+IMAGE_TAG=${{ github.sha }}
+POSTGRES_USER=${{ secrets.POSTGRES_USER }}
+POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
+POSTGRES_DB=${{ secrets.POSTGRES_DB }}
+EOF
+
             # Login to GitHub Container Registry
             echo "$GITHUB_TOKEN" | $DOCKER_CMD login ghcr.io -u ${{ github.actor }} --password-stdin
-
-            # Set environment variables for docker-compose
-            export DOCKER_REGISTRY="ghcr.io"
-            export DOCKER_IMAGE_PREFIX="$(echo '${{ github.repository_owner }}' | tr '[:upper:]' '[:lower:]')/backend-gmao"
-            export IMAGE_TAG="${{ github.sha }}"
-            export POSTGRES_USER="${{ secrets.POSTGRES_USER }}"
-            export POSTGRES_PASSWORD="${{ secrets.POSTGRES_PASSWORD }}"
-            export POSTGRES_DB="${{ secrets.POSTGRES_DB }}"
 
             # Pull latest images
             $DOCKER_CMD compose -f docker-compose.prod.yml pull
@@ -161,4 +163,5 @@ jobs:
 
             # Clean up old images
             $DOCKER_CMD image prune -f
+
 

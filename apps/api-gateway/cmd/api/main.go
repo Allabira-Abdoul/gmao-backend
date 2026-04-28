@@ -122,12 +122,8 @@ func main() {
 			req.URL.RawQuery = c.Request.URL.RawQuery
 			req.Host = targetURL.Host
 
-			// Forward original headers
-			for key, values := range c.Request.Header {
-				for _, value := range values {
-					req.Header.Set(key, value)
-				}
-			}
+			// ⚡ Bolt Optimization: Removed redundant O(N) header copying loop.
+			// The proxy's incoming request clone already contains all original headers.
 
 			// Add gateway-specific headers
 			req.Header.Set("X-Forwarded-For", c.ClientIP())

@@ -80,12 +80,32 @@ func main() {
 		})
 	})
 
+	// Allowed public services whitelist to prevent exposing internal services
+	allowedServices := map[string]bool{
+		"analytics":      true,
+		"asset":          true,
+		"authentication": true,
+		"maintenance":    true,
+		"prediction":     true,
+		"user":           true,
+	}
+
 	// Dynamic reverse proxy for all service routes
 	// Pattern: /api/{service-name}/* -> {service-name}-service/
 	// Example: GET /api/analytics/health -> analytics-service /health
 	router.Any("/api/:service/*path", func(c *gin.Context) {
 		serviceSuffix := c.Param("service")
 		targetPath := c.Param("path")
+
+		// 🛡️ Security: Enforce service whitelist to prevent SSRF / unauthorized access to internal services
+		if !allowedServices[serviceSuffix] {
+			log.Printf("Security alert: Blocked attempt to access unauthorized service: %s", serviceSuffix)
+			c.JSON(http.StatusForbidden, gin.H{
+				"error":   "forbidden",
+				"message": "Access to this service is not allowed",
+			})
+			return
+		}
 
 		// Build the Consul service name
 		targetServiceName := serviceSuffix + "-service"

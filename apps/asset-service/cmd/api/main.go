@@ -7,9 +7,9 @@ import (
 	"os/signal"
 	"syscall"
 
+	httphandler "backend-gmao/apps/asset-service/internal/adapters/primary/http"
 	"backend-gmao/pkg/db"
 	"backend-gmao/pkg/discovery"
-	httphandler "backend-gmao/apps/asset-service/internal/adapters/primary/http"
 	"github.com/gin-gonic/gin"
 )
 
@@ -41,7 +41,7 @@ func main() {
 	if host == "" {
 		host = "127.0.0.1"
 	}
-	
+
 	// Default port for local testing based on service
 	port := 8080 // We will override this if PORT env var is set
 	if envPort := os.Getenv("PORT"); envPort != "" {

@@ -7,6 +7,7 @@ import (
 	"time"
 
 	consul "github.com/hashicorp/consul/api"
+	"golang.org/x/sync/singleflight"
 )
 
 // Registry defines the interface for service discovery operations (Secondary Port)
@@ -26,6 +27,7 @@ type ConsulRegistry struct {
 	client *consul.Client
 	cache  map[string]cacheEntry
 	mu     sync.RWMutex
+	sf     singleflight.Group
 }
 
 // NewConsulRegistry creates a new ConsulRegistry connected to the given Consul address.
@@ -92,29 +94,38 @@ func (r *ConsulRegistry) Discover(serviceName string) (string, error) {
 	}
 
 	// 2. Cache miss or expired, fetch from Consul
-	entries, _, err := r.client.Health().Service(serviceName, "", true, nil)
+	// Use singleflight to prevent cache stampedes (thundering herd)
+	v, err, _ := r.sf.Do(serviceName, func() (interface{}, error) {
+		entries, _, err := r.client.Health().Service(serviceName, "", true, nil)
+		if err != nil {
+			// If Consul is down but we have a stale cache, we could optionally return it here.
+			// For now, we return the error to maintain strict correctness, but if high availability
+			// is preferred over strict correctness, we could return the stale entry.
+			return "", fmt.Errorf("failed to discover service %s: %w", serviceName, err)
+		}
+
+		if len(entries) == 0 {
+			return "", fmt.Errorf("no healthy instances found for service %s", serviceName)
+		}
+
+		// Return the first healthy instance
+		consulEntry := entries[0]
+		addr := fmt.Sprintf("%s:%d", consulEntry.Service.Address, consulEntry.Service.Port)
+
+		// 3. Update cache (10 seconds TTL)
+		r.mu.Lock()
+		r.cache[serviceName] = cacheEntry{
+			addr:      addr,
+			expiresAt: time.Now().Add(10 * time.Second),
+		}
+		r.mu.Unlock()
+
+		return addr, nil
+	})
+
 	if err != nil {
-		// If Consul is down but we have a stale cache, we could optionally return it here.
-		// For now, we return the error to maintain strict correctness, but if high availability
-		// is preferred over strict correctness, we could return the stale entry.
-		return "", fmt.Errorf("failed to discover service %s: %w", serviceName, err)
+		return "", err
 	}
 
-	if len(entries) == 0 {
-		return "", fmt.Errorf("no healthy instances found for service %s", serviceName)
-	}
-
-	// Return the first healthy instance
-	consulEntry := entries[0]
-	addr := fmt.Sprintf("%s:%d", consulEntry.Service.Address, consulEntry.Service.Port)
-
-	// 3. Update cache (10 seconds TTL)
-	r.mu.Lock()
-	r.cache[serviceName] = cacheEntry{
-		addr:      addr,
-		expiresAt: time.Now().Add(10 * time.Second),
-	}
-	r.mu.Unlock()
-
-	return addr, nil
+	return v.(string), nil
 }

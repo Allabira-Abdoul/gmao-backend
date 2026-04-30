@@ -8,6 +8,7 @@ import (
 	"net/url"
 	"os"
 	"os/signal"
+	"path"
 	"strings"
 	"syscall"
 
@@ -138,7 +139,8 @@ func main() {
 		proxy.Director = func(req *http.Request) {
 			req.URL.Scheme = targetURL.Scheme
 			req.URL.Host = targetURL.Host
-			req.URL.Path = targetPath
+			// 🛡️ Security: Clean the path to prevent path traversal (SSRF)
+			req.URL.Path = path.Clean("/" + targetPath)
 			req.URL.RawQuery = c.Request.URL.RawQuery
 			req.Host = targetURL.Host
 

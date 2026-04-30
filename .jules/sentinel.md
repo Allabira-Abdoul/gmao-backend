@@ -7,3 +7,8 @@
 **Vulnerability:** The API Gateway used a dynamic wildcard route (`/api/:service/*path`) to proxy requests to any service registered in Consul based entirely on user input. This allowed public attackers to access internal-only microservices that were not intended to be exposed to the internet, potentially leading to unauthorized data access or Server-Side Request Forgery (SSRF) style pivots.
 **Learning:** In a dynamic proxy architecture utilizing service discovery mechanisms (like Consul), trusting user-provided routing inputs without validation is dangerous. Any service registered with the backend system becomes publicly accessible by default.
 **Prevention:** Always implement an explicit whitelist at the gateway/proxy layer to restrict which downstream services are publicly accessible.
+
+## 2024-04-30 - Path Traversal in API Gateway Reverse Proxy
+**Vulnerability:** API Gateway takes an arbitrary URL parameter and directly passes it to backend services without sanitization. This allowed path traversal sequences like `../../../` to be passed directly to backend services via reverse proxy, creating SSRF risks.
+**Learning:** Default proxy handlers might forward raw, unescaped, or unnormalized paths. Go's Gin router doesn't automatically normalize `c.Param("path")` values against directory traversal sequences if they are passed dynamically into downstream proxies.
+**Prevention:** Always normalize and validate external inputs that manipulate file paths or internal URL routing. Use `path.Clean("/" + targetPath)` for proxy target paths.

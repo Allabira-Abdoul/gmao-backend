@@ -48,7 +48,7 @@ func (s *AuthService) Login(ctx context.Context, req domain.LoginRequest) (*doma
 	}
 
 	// 3. Check account status
-	if userInfo.StatutCompte != "ACTIF" {
+	if userInfo.StatutCompte != "ACTIVE" {
 		return nil, ErrAccountDisabled
 	}
 
@@ -104,7 +104,7 @@ func (s *AuthService) RefreshToken(ctx context.Context, req domain.RefreshReques
 		return nil, ErrInvalidToken // Or specific error if user deleted
 	}
 
-	if userInfo.StatutCompte != "ACTIF" {
+	if userInfo.StatutCompte != "ACTIVE" {
 		return nil, ErrAccountDisabled
 	}
 

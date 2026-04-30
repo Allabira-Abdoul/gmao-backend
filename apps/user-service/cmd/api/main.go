@@ -50,15 +50,24 @@ func main() {
 		log.Fatalf("Failed to connect to database: %v", err)
 	}
 
-	// --- Auto-Migrate Tables ---
+	// --- Auto-Migrate Tables (Ordered to handle dependencies) ---
 	log.Println("Running database migrations...")
-	if err := database.AutoMigrate(
-		&domain.Role{},
-		&domain.RolePrivilege{},
-		&domain.User{},
-	); err != nil {
-		log.Fatalf("Failed to migrate database: %v", err)
+	
+	// 1. Migrate Roles first (Parent)
+	if err := database.AutoMigrate(&domain.Role{}); err != nil {
+		log.Fatalf("Failed to migrate Role table: %v", err)
 	}
+	
+	// 2. Migrate RolePrivileges (Depends on Role)
+	if err := database.AutoMigrate(&domain.RolePrivilege{}); err != nil {
+		log.Fatalf("Failed to migrate RolePrivilege table: %v", err)
+	}
+	
+	// 3. Migrate Users (Depends on Role)
+	if err := database.AutoMigrate(&domain.User{}); err != nil {
+		log.Fatalf("Failed to migrate User table: %v", err)
+	}
+	
 	log.Println("Database migrations completed")
 
 	// --- Seed Default Data ---

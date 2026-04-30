@@ -7,3 +7,6 @@
 ## 2024-05-23 - Prevented Consul cache stampede (thundering herd) with singleflight
 **Learning:** Even with caching in place for Consul service discovery, when the cache expires (e.g., TTL of 10s), concurrent incoming requests for the same service will all simultaneously experience a cache miss. This leads to a "cache stampede" or "thundering herd" where multiple synchronous network calls are fired to the Consul server simultaneously, bypassing the cache's intent under load and reducing performance.
 **Action:** Always wrap expensive or network-bound cache miss operations with a mechanism like `golang.org/x/sync/singleflight`. This ensures that only one goroutine executes the expensive operation, while all other concurrent goroutines wait for the result and share it, protecting the downstream dependency and reducing latency.
+## 2024-05-24 - Avoiding url.Parse in dynamic routing hot paths
+**Learning:** `url.Parse` coupled with `fmt.Sprintf` allocates strings and performs complex validation. In hot paths like API Gateway reverse proxying, doing this per-request adds non-trivial CPU overhead (~440ns vs ~0.38ns).
+**Action:** When the scheme and host are known and safe, directly instantiate `&url.URL{Scheme: "...", Host: "..."}` to completely avoid string allocation and parsing logic.

@@ -122,13 +122,11 @@ func main() {
 		}
 
 		// Build target URL
-		targetURL, err := url.Parse(fmt.Sprintf("http://%s", addr))
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{
-				"error":   "internal_error",
-				"message": "Failed to parse target URL",
-			})
-			return
+		// ⚡ Bolt Optimization: Replace fmt.Sprintf + url.Parse with direct struct instantiation
+		// to avoid string allocation and parsing overhead in the routing hot path.
+		targetURL := &url.URL{
+			Scheme: "http",
+			Host:   addr,
 		}
 
 		// Create reverse proxy

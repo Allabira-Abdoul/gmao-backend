@@ -13,6 +13,7 @@ import (
 	"syscall"
 
 	"backend-gmao/pkg/discovery"
+	"backend-gmao/pkg/middleware"
 	"github.com/gin-gonic/gin"
 )
 
@@ -58,6 +59,9 @@ func main() {
 
 	// Initialize Gin router
 	router := gin.Default()
+	
+	// Enable CORS
+	router.Use(middleware.Cors())
 
 	// Add global security headers middleware
 	router.Use(func(c *gin.Context) {

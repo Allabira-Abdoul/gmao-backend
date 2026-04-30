@@ -63,7 +63,7 @@ func (s *UserService) CreateUser(ctx context.Context, req domain.CreateUserReque
 		Email:        req.Email,
 		MotDePasse:   hashedPassword,
 		StatutCompte: domain.StatusActive,
-		IDRole:       roleID,
+		RoleID:       roleID,
 	}
 
 	if err := s.userRepo.Create(ctx, user); err != nil {
@@ -159,7 +159,7 @@ func (s *UserService) UpdateUser(ctx context.Context, id uuid.UUID, req domain.U
 		if err != nil || role == nil {
 			return nil, ErrRoleNotFound
 		}
-		user.IDRole = roleID
+		user.RoleID = roleID
 	}
 
 	if err := s.userRepo.Update(ctx, user); err != nil {

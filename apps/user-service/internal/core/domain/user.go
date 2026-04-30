@@ -22,8 +22,8 @@ type User struct {
 	Email         string        `gorm:"column:email;uniqueIndex;not null" json:"email"`
 	MotDePasse    string        `gorm:"column:mot_de_passe;not null" json:"-"`
 	StatutCompte  AccountStatus `gorm:"column:statut_compte;type:varchar(20);default:'ACTIVE'" json:"statut_compte"`
-	IDRole        uuid.UUID     `gorm:"column:id_role;type:uuid;not null" json:"id_role"`
-	Role          Role          `gorm:"foreignKey:IDRole;references:IDRole" json:"role,omitempty"`
+	RoleID        uuid.UUID     `gorm:"column:id_role;type:uuid;not null" json:"id_role"`
+	Role          Role          `gorm:"foreignKey:RoleID;constraint:OnUpdate:CASCADE,OnDelete:RESTRICT;" json:"role,omitempty"`
 	CreatedAt     time.Time     `gorm:"column:created_at" json:"created_at"`
 	UpdatedAt     time.Time     `gorm:"column:updated_at" json:"updated_at"`
 }
@@ -52,7 +52,7 @@ func (u *User) ToResponse() UserResponse {
 		NomComplet:    u.NomComplet,
 		Email:         u.Email,
 		StatutCompte:  u.StatutCompte,
-		IDRole:        u.IDRole,
+		IDRole:        u.RoleID,
 		CreatedAt:     u.CreatedAt,
 		UpdatedAt:     u.UpdatedAt,
 	}

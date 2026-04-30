@@ -126,7 +126,7 @@ func seedAdminUser(db *gorm.DB) {
 		Email:         "admin@gmao.local",
 		MotDePasse:    hashedPassword,
 		StatutCompte:  domain.StatusActive,
-		IDRole:        adminRole.IDRole,
+		RoleID:        adminRole.IDRole,
 	}
 
 	if err := db.Create(&adminUser).Error; err != nil {

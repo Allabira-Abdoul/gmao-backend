@@ -9,7 +9,6 @@ import (
 
 	"backend-gmao/apps/authentication-service/internal/core/domain"
 	"backend-gmao/pkg/discovery"
-	"backend-gmao/pkg/response"
 	"github.com/google/uuid"
 )
 
@@ -68,22 +67,19 @@ func (c *userClient) callUserService(ctx context.Context, path string) (*domain.
 		return nil, fmt.Errorf("user-service returned status: %d", resp.StatusCode)
 	}
 
-	// 6. Decode response
-	var apiResp response.APIResponse
+	// 6. Decode response directly into a struct with a strongly typed Data field
+	// ⚡ Bolt Optimization: Avoided decoding into a generic interface{}, marshaling it to JSON,
+	// and then unmarshaling it again. This eliminates two unnecessary reflection passes and
+	// multiple allocations per API call.
+	var apiResp struct {
+		Success bool             `json:"success"`
+		Data    *domain.UserInfo `json:"data,omitempty"`
+	}
+
 	if err := json.NewDecoder(resp.Body).Decode(&apiResp); err != nil {
 		return nil, err
 	}
 
 	// 7. Extract UserInfo from Data
-	dataBytes, err := json.Marshal(apiResp.Data)
-	if err != nil {
-		return nil, err
-	}
-
-	var userInfo domain.UserInfo
-	if err := json.Unmarshal(dataBytes, &userInfo); err != nil {
-		return nil, err
-	}
-
-	return &userInfo, nil
+	return apiResp.Data, nil
 }

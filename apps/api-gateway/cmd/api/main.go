@@ -102,6 +102,19 @@ func main() {
 		serviceSuffix := c.Param("service")
 		targetPath := c.Param("path")
 
+		// 🛡️ Security: Clean the path to prevent path traversal (SSRF)
+		cleanedPath := path.Clean("/" + targetPath)
+
+		// 🛡️ Security: Block external access to internal endpoints
+		if strings.HasPrefix(cleanedPath, "/internal/") || cleanedPath == "/internal" {
+			log.Printf("Security alert: Blocked attempt to access internal endpoint via gateway: %s", cleanedPath)
+			c.JSON(http.StatusForbidden, gin.H{
+				"error":   "forbidden",
+				"message": "Access to internal endpoints is not allowed",
+			})
+			return
+		}
+
 		// 🛡️ Security: Enforce service whitelist to prevent SSRF / unauthorized access to internal services
 		if !allowedServices[serviceSuffix] {
 			log.Printf("Security alert: Blocked attempt to access unauthorized service: %s", serviceSuffix)
@@ -141,8 +154,8 @@ func main() {
 		proxy.Director = func(req *http.Request) {
 			req.URL.Scheme = targetURL.Scheme
 			req.URL.Host = targetURL.Host
-			// 🛡️ Security: Clean the path to prevent path traversal (SSRF)
-			req.URL.Path = path.Clean("/" + targetPath)
+			// Use the previously cleaned path
+			req.URL.Path = cleanedPath
 			req.URL.RawQuery = c.Request.URL.RawQuery
 			req.Host = targetURL.Host
 

@@ -68,22 +68,27 @@ func (c *userClient) callUserService(ctx context.Context, path string) (*domain.
 		return nil, fmt.Errorf("user-service returned status: %d", resp.StatusCode)
 	}
 
-	// 6. Decode response
-	var apiResp response.APIResponse
+	// 6. Decode response directly into a strongly-typed struct to avoid double-marshaling overhead
+	var apiResp struct {
+		Success bool               `json:"success"`
+		Data    *domain.UserInfo   `json:"data,omitempty"`
+		Error   *response.APIError `json:"error,omitempty"`
+	}
+
 	if err := json.NewDecoder(resp.Body).Decode(&apiResp); err != nil {
 		return nil, err
 	}
 
-	// 7. Extract UserInfo from Data
-	dataBytes, err := json.Marshal(apiResp.Data)
-	if err != nil {
-		return nil, err
+	if !apiResp.Success {
+		if apiResp.Error != nil {
+			return nil, fmt.Errorf("user-service error: %s", apiResp.Error.Message)
+		}
+		return nil, fmt.Errorf("user-service returned unsuccessful response")
 	}
 
-	var userInfo domain.UserInfo
-	if err := json.Unmarshal(dataBytes, &userInfo); err != nil {
-		return nil, err
+	if apiResp.Data == nil {
+		return nil, fmt.Errorf("user-service returned no data")
 	}
 
-	return &userInfo, nil
+	return apiResp.Data, nil
 }

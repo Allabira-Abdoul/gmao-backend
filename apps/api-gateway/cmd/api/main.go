@@ -112,6 +112,16 @@ func main() {
 			return
 		}
 
+		// 🛡️ Security: Block external access to internal endpoints
+		if strings.HasPrefix(targetPath, "/internal/") || targetPath == "/internal" || targetPath == "internal" || strings.HasPrefix(targetPath, "internal/") {
+			log.Printf("Security alert: Blocked attempt to access internal endpoint: %s", targetPath)
+			c.JSON(http.StatusForbidden, gin.H{
+				"error":   "forbidden",
+				"message": "Access to internal endpoints is not allowed",
+			})
+			return
+		}
+
 		// Build the Consul service name
 		targetServiceName := serviceSuffix + "-service"
 

@@ -10,3 +10,6 @@
 ## 2024-05-24 - Avoiding url.Parse in dynamic routing hot paths
 **Learning:** `url.Parse` coupled with `fmt.Sprintf` allocates strings and performs complex validation. In hot paths like API Gateway reverse proxying, doing this per-request adds non-trivial CPU overhead (~440ns vs ~0.38ns).
 **Action:** When the scheme and host are known and safe, directly instantiate `&url.URL{Scheme: "...", Host: "..."}` to completely avoid string allocation and parsing logic.
+## 2026-05-03 - Avoid Double-Marshaling in API Response Decoding
+**Learning:** Decoding HTTP JSON responses into generic `interface{}` structures like `response.APIResponse.Data`, followed by a `json.Marshal` and subsequent `json.Unmarshal` into the target type, creates significant unnecessary CPU overhead and garbage collection pressure due to double serialization.
+**Action:** When consuming internal APIs, avoid using generic `APIResponse` structs with `interface{}` payloads. Instead, decode directly into strongly-typed anonymous structs that mirror the API response structure to eliminate double-marshaling.

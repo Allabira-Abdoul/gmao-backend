@@ -12,3 +12,8 @@
 **Vulnerability:** API Gateway takes an arbitrary URL parameter and directly passes it to backend services without sanitization. This allowed path traversal sequences like `../../../` to be passed directly to backend services via reverse proxy, creating SSRF risks.
 **Learning:** Default proxy handlers might forward raw, unescaped, or unnormalized paths. Go's Gin router doesn't automatically normalize `c.Param("path")` values against directory traversal sequences if they are passed dynamically into downstream proxies.
 **Prevention:** Always normalize and validate external inputs that manipulate file paths or internal URL routing. Use `path.Clean("/" + targetPath)` for proxy target paths.
+
+## 2024-05-24 - API Gateway Bypass to Internal Endpoints
+**Vulnerability:** The API Gateway allowed external clients to access `/internal/` service-to-service endpoints by directly specifying the path in the proxied URL. Furthermore, it automatically injected the `X-Gateway-Service` header on all proxied requests and allowed external clients to spoof the `X-Internal-Service` header, fully satisfying downstream `RequireInternalService` middleware checks.
+**Learning:** Downstream microservices trust headers injected by the API Gateway to authorize internal traffic. The gateway must act as a strict firewall, blocking access to `/internal/` endpoints and scrubbing internal headers from incoming external requests.
+**Prevention:** Always ensure the API Gateway properly sanitizes URL paths (e.g. `path.Clean()`) and blocks external access to internal routes before reverse proxying. Always delete internal metadata headers (like `X-Internal-Service`) from incoming requests before forwarding them to downstream services.

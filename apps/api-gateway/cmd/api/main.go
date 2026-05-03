@@ -112,6 +112,17 @@ func main() {
 			return
 		}
 
+		// 🛡️ Security: Block external access to internal service endpoints
+		cleanedPath := path.Clean("/" + targetPath)
+		if strings.HasPrefix(cleanedPath, "/internal/") || cleanedPath == "/internal" {
+			log.Printf("Security alert: Blocked external attempt to access internal path: %s", cleanedPath)
+			c.JSON(http.StatusForbidden, gin.H{
+				"error":   "forbidden",
+				"message": "Access to internal endpoints is not allowed",
+			})
+			return
+		}
+
 		// Build the Consul service name
 		targetServiceName := serviceSuffix + "-service"
 
@@ -148,6 +159,9 @@ func main() {
 
 			// ⚡ Bolt Optimization: Removed redundant O(N) header copying loop.
 			// The proxy's incoming request clone already contains all original headers.
+
+			// 🛡️ Security: Drop internal headers to prevent external spoofing
+			req.Header.Del("X-Internal-Service")
 
 			// Add gateway-specific headers
 			req.Header.Set("X-Forwarded-For", c.ClientIP())

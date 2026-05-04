@@ -145,8 +145,18 @@ jobs:
             EOF
 
             # ---- Clean up old data to free space ----
+            echo "Checking initial disk space..."
+            df -h /
+            
             echo "Cleaning up unused Docker data..."
-            $DOCKER_CMD system prune -af
+            $DOCKER_CMD system prune -af --volumes || true
+            
+            # Truncate docker logs which can consume GBs of space
+            echo "Truncating Docker container logs..."
+            sudo find /var/lib/docker/containers/ -type f -name "*.log" -exec sudo truncate -s 0 {} + || true
+            
+            echo "Final disk space check before pulling..."
+            df -h /
 
             # Login to GitHub Container Registry
             echo "$GITHUB_TOKEN" | $DOCKER_CMD login ghcr.io -u ${{ github.actor }} --password-stdin

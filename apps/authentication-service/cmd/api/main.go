@@ -20,7 +20,7 @@ import (
 )
 
 func main() {
-	// --- Consul Config ---
+	// --- Consul Config ---//
 	consulHost := getEnv("CONSUL_HOST", "127.0.0.1")
 	consulPort := getEnv("CONSUL_PORT", "8500")
 	consulURL := fmt.Sprintf("%s:%s", consulHost, consulPort)

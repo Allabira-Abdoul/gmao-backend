@@ -3,6 +3,8 @@ package discovery
 import (
 	"fmt"
 	"log"
+	"net"
+	"strconv"
 	"sync"
 	"time"
 
@@ -54,7 +56,7 @@ func (r *ConsulRegistry) Register(serviceID, serviceName, host string, port int)
 		Address: host,
 		Port:    port,
 		Check: &consul.AgentServiceCheck{
-			HTTP:                           fmt.Sprintf("http://%s:%d/health", host, port),
+			HTTP:                           "http://" + net.JoinHostPort(host, strconv.Itoa(port)) + "/health",
 			Interval:                       "10s",
 			Timeout:                        "5s",
 			DeregisterCriticalServiceAfter: "30s",
@@ -110,7 +112,7 @@ func (r *ConsulRegistry) Discover(serviceName string) (string, error) {
 
 		// Return the first healthy instance
 		consulEntry := entries[0]
-		addr := fmt.Sprintf("%s:%d", consulEntry.Service.Address, consulEntry.Service.Port)
+		addr := net.JoinHostPort(consulEntry.Service.Address, strconv.Itoa(consulEntry.Service.Port))
 
 		// 3. Update cache (10 seconds TTL)
 		r.mu.Lock()

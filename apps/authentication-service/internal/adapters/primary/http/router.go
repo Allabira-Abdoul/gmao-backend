@@ -2,7 +2,9 @@ package http
 
 import (
 	"backend-gmao/apps/authentication-service/internal/application"
+	"backend-gmao/pkg/middleware"
 	"github.com/gin-gonic/gin"
+	"time"
 )
 
 // RegisterRoutes sets up all HTTP routes for the authentication service.
@@ -19,7 +21,7 @@ func RegisterRoutes(
 	// Auth group
 	auth := router.Group("/auth")
 	{
-		auth.POST("/login", authHandler.Login)
+		auth.POST("/login", middleware.RateLimit(5, time.Minute), authHandler.Login)
 		auth.POST("/refresh", authHandler.Refresh)
 		auth.POST("/logout", authHandler.Logout)
 	}

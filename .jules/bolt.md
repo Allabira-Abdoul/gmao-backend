@@ -19,3 +19,7 @@
 ## 2024-05-01 - Avoid Double JSON Unmarshaling
 **Learning:** Using `json.Marshal` on an already unmarshaled generic interface (like `response.APIResponse.Data`) and then unmarshaling it again into a struct causes unnecessary CPU overhead, multiple allocations, and extra reflection passes.
 **Action:** Decode HTTP JSON responses directly into anonymous structs with strongly typed fields to eliminate redundant marshaling/unmarshaling cycles.
+
+## 2026-05-04 - Replacing fmt.Sprintf with net.JoinHostPort
+**Learning:** `fmt.Sprintf` is allocation-heavy and uses reflection, which degrades performance in hot paths. Furthermore, when dealing with IPv6 addresses, `%s:%d` might format addresses incorrectly (e.g., `::1:8080` instead of `[::1]:8080`), leading to bugs.
+**Action:** Use `net.JoinHostPort` along with `strconv.Itoa` to format `host:port` pairs. This avoids string allocations and reflection overhead from `fmt.Sprintf`, while being functionally correct and safe for IPv6 parsing.

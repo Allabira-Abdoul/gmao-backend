@@ -89,7 +89,7 @@ jobs:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_SSH_KEY }}
-          source: "deploy/docker-compose.prod.yml"
+          source: "deploy/docker-compose.prod.yml,deploy/nginx.conf"
           target: "~/deploy"
           strip_components: 1
 
@@ -142,7 +142,20 @@ jobs:
             POSTGRES_USER=${{ secrets.POSTGRES_USER }}
             POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
             POSTGRES_DB=${{ secrets.POSTGRES_DB }}
+            DOMAIN_NAME=${{ secrets.DOMAIN_NAME }}
+            CERTBOT_EMAIL=${{ secrets.CERTBOT_EMAIL }}
             EOF
+            
+            # ---- Initialize SSL if first time ----
+            if [ ! -d "/home/${{ secrets.EC2_USERNAME }}/deploy/certbot-etc/live" ]; then
+                echo "Initializing SSL certificates for ${{ secrets.DOMAIN_NAME }}..."
+                # Start nginx temporarily to handle the challenge
+                $DOCKER_CMD compose -f docker-compose.prod.yml up -d nginx
+                # Wait for nginx to be ready
+                sleep 5
+                # Run certbot to get certificates
+                $DOCKER_CMD compose -f docker-compose.prod.yml run --rm certbot certonly --webroot --webroot-path /var/www/certbot/ --email ${{ secrets.CERTBOT_EMAIL }} --agree-tos --no-eff-email -d ${{ secrets.DOMAIN_NAME }} || true
+            fi
 
             # ---- Clean up old data to free space ----
             echo "Checking initial disk space..."

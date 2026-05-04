@@ -9,7 +9,6 @@ import (
 
 	"backend-gmao/apps/authentication-service/internal/core/domain"
 	"backend-gmao/pkg/discovery"
-	"backend-gmao/pkg/response"
 	"github.com/google/uuid"
 )
 

@@ -69,8 +69,8 @@ func (c *userClient) callUserService(ctx context.Context, path string) (*domain.
 
 	// 6. Decode response directly into a strongly-typed struct to avoid double-marshaling overhead
 	var apiResp struct {
-		Success bool               `json:"success"`
-		Data    *domain.UserInfo   `json:"data,omitempty"`
+		Success bool             `json:"success"`
+		Data    *domain.UserInfo `json:"data,omitempty"`
 		Error   *response.APIError `json:"error,omitempty"`
 	}
 
@@ -80,13 +80,13 @@ func (c *userClient) callUserService(ctx context.Context, path string) (*domain.
 
 	if !apiResp.Success {
 		if apiResp.Error != nil {
-			return nil, fmt.Errorf("user-service error: %s", apiResp.Error.Message)
+			return nil, fmt.Errorf("API error: %s - %s", apiResp.Error.Code, apiResp.Error.Message)
 		}
-		return nil, fmt.Errorf("user-service returned unsuccessful response")
+		return nil, fmt.Errorf("API request failed with unknown error")
 	}
 
 	if apiResp.Data == nil {
-		return nil, fmt.Errorf("user-service returned no data")
+		return nil, fmt.Errorf("API response data is missing")
 	}
 
 	return apiResp.Data, nil

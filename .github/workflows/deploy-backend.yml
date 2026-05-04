@@ -89,7 +89,7 @@ jobs:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_SSH_KEY }}
-          source: "deploy/docker-compose.prod.yml,deploy/nginx.conf"
+          source: "deploy/docker-compose.prod.yml,deploy/nginx.conf,deploy/nginx-entrypoint.sh"
           target: "~/deploy"
           strip_components: 1
 
@@ -143,6 +143,10 @@ jobs:
             POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
             POSTGRES_DB=${{ secrets.POSTGRES_DB }}
             EOF
+
+            # Fix line endings (Windows CRLF -> Linux LF) and make script executable
+            sed -i 's/\r$//' nginx-entrypoint.sh 2>/dev/null || true
+            chmod +x nginx-entrypoint.sh
 
             # ---- Clean up old data to free space ----
             echo "Checking initial disk space..."

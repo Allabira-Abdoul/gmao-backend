@@ -144,6 +144,10 @@ jobs:
             POSTGRES_DB=${{ secrets.POSTGRES_DB }}
             EOF
 
+            # ---- Clean up old data to free space ----
+            echo "Cleaning up unused Docker data..."
+            $DOCKER_CMD system prune -af
+
             # Login to GitHub Container Registry
             echo "$GITHUB_TOKEN" | $DOCKER_CMD login ghcr.io -u ${{ github.actor }} --password-stdin
 

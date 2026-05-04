@@ -173,7 +173,7 @@ jobs:
 
             # Health check the gateway
             echo "Running health check..."
-            curl -sf http://localhost/health || echo "WARNING: Gateway health check failed"
+            curl -sf -k https://localhost/health || echo "WARNING: Gateway health check failed"
 
             # Clean up old images
             $DOCKER_CMD image prune -f

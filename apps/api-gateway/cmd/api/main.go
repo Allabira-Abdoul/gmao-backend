@@ -172,6 +172,9 @@ func main() {
 			// ⚡ Bolt Optimization: Removed redundant O(N) header copying loop.
 			// The proxy's incoming request clone already contains all original headers.
 
+			// 🛡️ Security: Drop internal headers to prevent external spoofing
+			req.Header.Del("X-Internal-Service")
+
 			// Add gateway-specific headers
 			req.Header.Set("X-Forwarded-For", c.ClientIP())
 			req.Header.Set("X-Forwarded-Host", c.Request.Host)

@@ -13,3 +13,9 @@
 ## 2026-05-03 - Avoid Double-Marshaling in API Response Decoding
 **Learning:** Decoding HTTP JSON responses into generic `interface{}` structures like `response.APIResponse.Data`, followed by a `json.Marshal` and subsequent `json.Unmarshal` into the target type, creates significant unnecessary CPU overhead and garbage collection pressure due to double serialization.
 **Action:** When consuming internal APIs, avoid using generic `APIResponse` structs with `interface{}` payloads. Instead, decode directly into strongly-typed anonymous structs that mirror the API response structure to eliminate double-marshaling.
+## 2024-05-24 - Avoiding Double-Marshaling in API Clients
+**Learning:** Decoding JSON HTTP responses into generic wrapper structs (like `APIResponse{Data interface{}}`) forces a second round of marshaling/unmarshaling (`json.Marshal(apiResp.Data)` -> `json.Unmarshal(dataBytes, &targetStruct)`) to extract the actual payload. This double-marshaling adds unnecessary CPU and memory allocation overhead on every API client call.
+**Action:** Always decode HTTP JSON responses directly into strongly-typed anonymous structs (e.g., `struct{ Success bool; Data *MyDomainStruct }`) when consuming internal APIs to bypass the `interface{}` intermediate representation and extract the domain object in a single pass.
+## 2024-05-01 - Avoid Double JSON Unmarshaling
+**Learning:** Using `json.Marshal` on an already unmarshaled generic interface (like `response.APIResponse.Data`) and then unmarshaling it again into a struct causes unnecessary CPU overhead, multiple allocations, and extra reflection passes.
+**Action:** Decode HTTP JSON responses directly into anonymous structs with strongly typed fields to eliminate redundant marshaling/unmarshaling cycles.

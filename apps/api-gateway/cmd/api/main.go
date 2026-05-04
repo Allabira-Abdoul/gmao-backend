@@ -102,12 +102,35 @@ func main() {
 		serviceSuffix := c.Param("service")
 		targetPath := c.Param("path")
 
+		// 🛡️ Security: Clean the path to prevent path traversal (SSRF)
+		cleanedPath := path.Clean("/" + targetPath)
+
+		// 🛡️ Security: Block external access to internal endpoints
+		if strings.HasPrefix(cleanedPath, "/internal/") || cleanedPath == "/internal" {
+			log.Printf("Security alert: Blocked attempt to access internal endpoint via gateway: %s", cleanedPath)
+			c.JSON(http.StatusForbidden, gin.H{
+				"error":   "forbidden",
+				"message": "Access to internal endpoints is not allowed",
+			})
+			return
+		}
+
 		// 🛡️ Security: Enforce service whitelist to prevent SSRF / unauthorized access to internal services
 		if !allowedServices[serviceSuffix] {
 			log.Printf("Security alert: Blocked attempt to access unauthorized service: %s", serviceSuffix)
 			c.JSON(http.StatusForbidden, gin.H{
 				"error":   "forbidden",
 				"message": "Access to this service is not allowed",
+			})
+			return
+		}
+
+		// 🛡️ Security: Block external access to internal endpoints
+		if strings.HasPrefix(targetPath, "/internal/") || targetPath == "/internal" || targetPath == "internal" || strings.HasPrefix(targetPath, "internal/") {
+			log.Printf("Security alert: Blocked attempt to access internal endpoint: %s", targetPath)
+			c.JSON(http.StatusForbidden, gin.H{
+				"error":   "forbidden",
+				"message": "Access to internal endpoints is not allowed",
 			})
 			return
 		}
@@ -141,13 +164,16 @@ func main() {
 		proxy.Director = func(req *http.Request) {
 			req.URL.Scheme = targetURL.Scheme
 			req.URL.Host = targetURL.Host
-			// 🛡️ Security: Clean the path to prevent path traversal (SSRF)
-			req.URL.Path = path.Clean("/" + targetPath)
+			// Use the previously cleaned path
+			req.URL.Path = cleanedPath
 			req.URL.RawQuery = c.Request.URL.RawQuery
 			req.Host = targetURL.Host
 
 			// ⚡ Bolt Optimization: Removed redundant O(N) header copying loop.
 			// The proxy's incoming request clone already contains all original headers.
+
+			// 🛡️ Security: Drop internal headers to prevent external spoofing
+			req.Header.Del("X-Internal-Service")
 
 			// Add gateway-specific headers
 			req.Header.Set("X-Forwarded-For", c.ClientIP())

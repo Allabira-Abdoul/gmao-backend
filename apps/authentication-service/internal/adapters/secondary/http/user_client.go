@@ -67,19 +67,27 @@ func (c *userClient) callUserService(ctx context.Context, path string) (*domain.
 		return nil, fmt.Errorf("user-service returned status: %d", resp.StatusCode)
 	}
 
-	// 6. Decode response directly into a struct with a strongly typed Data field
-	// ⚡ Bolt Optimization: Avoided decoding into a generic interface{}, marshaling it to JSON,
-	// and then unmarshaling it again. This eliminates two unnecessary reflection passes and
-	// multiple allocations per API call.
+	// 6. Decode response directly into a strongly-typed struct to avoid double-marshaling overhead
 	var apiResp struct {
-		Success bool             `json:"success"`
-		Data    *domain.UserInfo `json:"data,omitempty"`
+		Success bool               `json:"success"`
+		Data    *domain.UserInfo   `json:"data,omitempty"`
+		Error   *response.APIError `json:"error,omitempty"`
 	}
 
 	if err := json.NewDecoder(resp.Body).Decode(&apiResp); err != nil {
 		return nil, err
 	}
 
-	// 7. Extract UserInfo from Data
+	if !apiResp.Success {
+		if apiResp.Error != nil {
+			return nil, fmt.Errorf("user-service error: %s", apiResp.Error.Message)
+		}
+		return nil, fmt.Errorf("user-service returned unsuccessful response")
+	}
+
+	if apiResp.Data == nil {
+		return nil, fmt.Errorf("user-service returned no data")
+	}
+
 	return apiResp.Data, nil
 }

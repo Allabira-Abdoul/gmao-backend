@@ -102,6 +102,17 @@ func (s *UserService) GetUserByEmail(ctx context.Context, email string) (*domain
 	return &resp, nil
 }
 
+// GetUserByIDInternal retrieves a user by UUID for internal authentication use.
+func (s *UserService) GetUserByIDInternal(ctx context.Context, id uuid.UUID) (*domain.InternalUserResponse, error) {
+	user, err := s.userRepo.FindByID(ctx, id)
+	if err != nil {
+		return nil, ErrUserNotFound
+	}
+
+	resp := user.ToInternalResponse()
+	return &resp, nil
+}
+
 // ListUsers returns a paginated list of users.
 func (s *UserService) ListUsers(ctx context.Context, page, perPage int) ([]domain.UserResponse, int64, error) {
 	if page < 1 {

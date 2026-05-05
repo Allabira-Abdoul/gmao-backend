@@ -52,7 +52,7 @@ func (h *InternalHandler) GetUserByID(c *gin.Context) {
 		return
 	}
 
-	user, err := h.userService.GetUserByID(c.Request.Context(), id)
+	user, err := h.userService.GetUserByIDInternal(c.Request.Context(), id)
 	if err != nil {
 		response.Error(c, http.StatusNotFound, "NOT_FOUND", "User not found")
 		return

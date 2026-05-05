@@ -11,10 +11,10 @@ import (
 )
 
 var (
-	ErrRoleNotFoundByID   = errors.New("role not found")
-	ErrRoleLibelleExists  = errors.New("a role with this label already exists")
-	ErrInvalidPrivileges  = errors.New("one or more privileges are invalid")
-	ErrRoleHasUsers       = errors.New("cannot delete a role that is assigned to users")
+	ErrRoleNotFoundByID  = errors.New("role not found")
+	ErrRoleLibelleExists = errors.New("a role with this label already exists")
+	ErrInvalidPrivileges = errors.New("one or more privileges are invalid")
+	ErrRoleHasUsers      = errors.New("cannot delete a role that is assigned to users")
 )
 
 // RoleService implements the RoleServicePort primary port.

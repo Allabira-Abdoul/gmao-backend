@@ -56,7 +56,6 @@ func (m *JWTManager) GetRefreshTokenDuration() time.Duration {
 	return m.refreshExpiry
 }
 
-
 // GenerateAccessToken creates a signed JWT access token.
 func (m *JWTManager) GenerateAccessToken(userID, email, role string, privileges []string) (string, time.Time, error) {
 	expiresAt := time.Now().Add(m.accessExpiry)

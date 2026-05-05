@@ -59,7 +59,7 @@ func main() {
 
 	// Initialize Gin router
 	router := gin.Default()
-	
+
 	// Enable CORS
 	router.Use(middleware.Cors())
 

@@ -70,8 +70,8 @@ func (c *userClient) callUserService(ctx context.Context, path string) (*domain.
 
 	// 6. Decode response directly into a strongly-typed struct to avoid double-marshaling overhead
 	var apiResp struct {
-		Success bool             `json:"success"`
-		Data    *domain.UserInfo `json:"data,omitempty"`
+		Success bool               `json:"success"`
+		Data    *domain.UserInfo   `json:"data,omitempty"`
 		Error   *response.APIError `json:"error,omitempty"`
 	}
 

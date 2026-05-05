@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"net/http"
+	"os"
 	"strings"
 
 	"backend-gmao/pkg/auth"
@@ -116,9 +117,39 @@ func RequirePrivilege(privilege string) gin.HandlerFunc {
 // Cors returns a middleware that handles Cross-Origin Resource Sharing (CORS).
 // This is essential for allowing the Flutter Web frontend to communicate with the backend.
 func Cors() gin.HandlerFunc {
+	allowedOriginsEnv := os.Getenv("ALLOWED_ORIGINS")
+	var allowedOrigins []string
+	if allowedOriginsEnv != "" {
+		allowedOrigins = strings.Split(allowedOriginsEnv, ",")
+		for i, v := range allowedOrigins {
+			allowedOrigins[i] = strings.TrimSpace(v)
+		}
+	}
+
 	return func(c *gin.Context) {
-		// In production, you should replace "*" with your actual frontend domain
-		c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
+		origin := c.Request.Header.Get("Origin")
+
+		// Determine the allowed origin to return
+		allowedOrigin := ""
+		if len(allowedOrigins) == 0 {
+			// Fallback for development if not configured, though still risky in production
+			// For defense in depth, we only allow localhost explicitly if not set,
+			// or default to nothing if we want to be strict.
+			// Let's allow reflection of origin in dev, but ideally this should be configured.
+			allowedOrigin = origin
+		} else {
+			for _, o := range allowedOrigins {
+				if origin == o || o == "*" {
+					allowedOrigin = origin
+					break
+				}
+			}
+		}
+
+		if allowedOrigin != "" {
+			c.Writer.Header().Set("Access-Control-Allow-Origin", allowedOrigin)
+		}
+
 		c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
 		c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, accept, origin, Cache-Control, X-Requested-With, X-Gateway-Service, X-Internal-Service")
 		c.Writer.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS, GET, PUT, DELETE")

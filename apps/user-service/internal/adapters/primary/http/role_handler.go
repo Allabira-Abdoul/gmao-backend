@@ -163,7 +163,7 @@ func (h *RoleHandler) SetRolePrivileges(c *gin.Context) {
 // ListPrivileges handles GET /privileges — returns all system-defined privileges
 func (h *RoleHandler) ListPrivileges(c *gin.Context) {
 	response.Success(c, http.StatusOK, gin.H{
-		"privileges":          domain.AllPrivileges(),
+		"privileges":           domain.AllPrivileges(),
 		"privileges_by_domain": domain.PrivilegesByDomain(),
 	})
 }

@@ -132,15 +132,22 @@ func Cors() gin.HandlerFunc {
 		// Determine the allowed origin to return
 		allowedOrigin := ""
 		if len(allowedOrigins) == 0 {
-			// Fallback for development if not configured, though still risky in production
-			// For defense in depth, we only allow localhost explicitly if not set,
-			// or default to nothing if we want to be strict.
-			// Let's allow reflection of origin in dev, but ideally this should be configured.
-			allowedOrigin = origin
+			// Fallback for development if not configured.
+			// For defense in depth, we only allow localhost explicitly.
+			// 🛡️ Security: Never reflect arbitrary origins, especially with credentials.
+			if strings.HasPrefix(origin, "http://localhost:") || origin == "http://localhost" {
+				allowedOrigin = origin
+			}
 		} else {
 			for _, o := range allowedOrigins {
-				if origin == o || o == "*" {
+				// 🛡️ Security: Explicitly match origin. If a wildcard is requested, return the literal "*"
+				// rather than reflecting the origin. Browsers will inherently block "*" with credentials,
+				// which is the desired secure behavior, while still allowing non-credentialed public access.
+				if origin == o {
 					allowedOrigin = origin
+					break
+				} else if o == "*" {
+					allowedOrigin = "*"
 					break
 				}
 			}

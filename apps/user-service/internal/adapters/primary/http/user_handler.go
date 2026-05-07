@@ -2,7 +2,6 @@ package http
 
 import (
 	"errors"
-	"fmt"
 	"net/http"
 
 	"backend-gmao/apps/user-service/internal/application"
@@ -26,33 +25,17 @@ func NewUserHandler(service *application.UserService) *UserHandler {
 
 // ListUsers handles GET /users
 func (h *UserHandler) ListUsers(c *gin.Context) {
-	page := 1
-	perPage := 20
+	// Extracting pagination validation into response package aligns with Single Responsibility Principle (SRP)
+	// Handlers should only orchestrate request data, not validate pagination logic.
+	pagination := response.GetPagination(c, 1, 20)
 
-	if p := c.Query("page"); p != "" {
-		fmt.Sscanf(p, "%d", &page)
-	}
-	if pp := c.Query("per_page"); pp != "" {
-		fmt.Sscanf(pp, "%d", &perPage)
-	}
-
-	users, total, err := h.service.ListUsers(c.Request.Context(), page, perPage)
+	users, total, err := h.service.ListUsers(c.Request.Context(), pagination.Page, pagination.PerPage)
 	if err != nil {
 		response.Error(c, http.StatusInternalServerError, "INTERNAL_ERROR", "Failed to list users")
 		return
 	}
 
-	totalPages := total / int64(perPage)
-	if total%int64(perPage) != 0 {
-		totalPages++
-	}
-
-	response.SuccessWithMeta(c, http.StatusOK, users, &response.Meta{
-		Page:       page,
-		PerPage:    perPage,
-		Total:      total,
-		TotalPages: totalPages,
-	})
+	response.SuccessWithMeta(c, http.StatusOK, users, response.NewMeta(pagination.Page, pagination.PerPage, total))
 }
 
 // GetUser handles GET /users/:id

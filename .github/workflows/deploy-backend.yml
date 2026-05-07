@@ -142,6 +142,7 @@ jobs:
             POSTGRES_USER=${{ secrets.POSTGRES_USER }}
             POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
             POSTGRES_DB=${{ secrets.POSTGRES_DB }}
+            ALLOWED_ORIGINS=${{ secrets.ALLOWED_ORIGINS || 'https://gmao-frontend.vercel.app' }}
             EOF
 
             # Fix line endings (Windows CRLF -> Linux LF) and make script executable

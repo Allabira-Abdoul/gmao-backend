@@ -49,6 +49,7 @@ services:
       CONSUL_HOST: consul
       CONSUL_PORT: "8500"
       SERVICE_HOST: api-gateway
+      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-https://gmao-frontend.vercel.app,http://localhost:3000,http://localhost:8080}
     depends_on:
       - consul
     restart: unless-stopped

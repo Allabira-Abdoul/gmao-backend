@@ -11,6 +11,7 @@ import (
 	"path"
 	"strings"
 	"syscall"
+	"time"
 
 	"backend-gmao/pkg/discovery"
 	"backend-gmao/pkg/middleware"
@@ -62,6 +63,9 @@ func main() {
 
 	// Enable CORS
 	router.Use(middleware.Cors())
+
+	// 🛡️ Security: Add global rate limiting middleware (defense-in-depth)
+	router.Use(middleware.RateLimit(100, 1*time.Minute))
 
 	// Add global security headers middleware
 	router.Use(func(c *gin.Context) {

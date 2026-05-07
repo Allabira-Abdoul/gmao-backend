@@ -33,3 +33,7 @@
 **Vulnerability:** The global CORS middleware in `pkg/middleware/middleware.go` incorrectly defaulted to allowing any origin to be reflected back in the `Access-Control-Allow-Origin` header when no configuration was set or a wildcard `*` was configured. This completely broke cross-origin security for authenticated requests by bypassing browser restrictions on wildcards when `Access-Control-Allow-Credentials: true` is set.
 **Learning:** Hardcoding origin reflection allows an attacker on an arbitrary domain to make authenticated requests. Browsers correctly block literal `*` origins with credentials, but will allow the request if the server manually reflects the malicious domain back.
 **Prevention:** Never reflect arbitrary incoming `Origin` headers. Enforce an exact match whitelist, or safely return the literal `*` wildcard, letting the browser naturally block credentialed cross-origin requests.
+## 2025-02-28 - [API Gateway Missing Global Rate Limit]
+**Vulnerability:** Missing global rate limit middleware in the API Gateway.
+**Learning:** While specific services like authentication implemented their own rate limits on sensitive endpoints (e.g. `/login`), relying solely on individual services leaves the gateway and other non-configured microservices vulnerable to generic denial of service (DoS) attacks.
+**Prevention:** Implement rate limiting middleware globally at the API Gateway layer to provide a foundational level of DoS protection and defense-in-depth across the system.

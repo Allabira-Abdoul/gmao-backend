@@ -22,7 +22,7 @@ func RegisterRoutes(
 	auth := router.Group("/auth")
 	{
 		auth.POST("/login", middleware.RateLimit(5, time.Minute), authHandler.Login)
-		auth.POST("/refresh", authHandler.Refresh)
-		auth.POST("/logout", authHandler.Logout)
+		auth.POST("/refresh", middleware.RateLimit(20, time.Minute), authHandler.Refresh)
+		auth.POST("/logout", middleware.RateLimit(20, time.Minute), authHandler.Logout)
 	}
 }

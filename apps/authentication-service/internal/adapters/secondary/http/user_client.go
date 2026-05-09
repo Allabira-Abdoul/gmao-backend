@@ -35,7 +35,7 @@ func (c *userClient) FindUserByID(ctx context.Context, id uuid.UUID) (*domain.Us
 	// We need to add this endpoint to user-service internal handler if it doesn't exist.
 	// Based on previous steps, I only added /internal/by-email.
 	// Let me add /internal/by-id to user-service later.
-	return c.callUserService(ctx, fmt.Sprintf("/internal/by-id?id=%s", id.String()))
+	return c.callUserService(ctx, "/internal/by-id?id="+id.String())
 }
 
 func (c *userClient) callUserService(ctx context.Context, path string) (*domain.UserInfo, error) {
@@ -46,7 +46,8 @@ func (c *userClient) callUserService(ctx context.Context, path string) (*domain.
 	}
 
 	// 2. Build target URL
-	url := fmt.Sprintf("http://%s%s", addr, path)
+	// ⚡ Bolt Optimization: Replace fmt.Sprintf with string concatenation in hot paths
+	url := "http://" + addr + path
 
 	// 3. Prepare request
 	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)

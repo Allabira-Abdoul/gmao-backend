@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"net"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
@@ -15,6 +16,7 @@ import (
 
 	"backend-gmao/pkg/discovery"
 	"backend-gmao/pkg/middleware"
+
 	"github.com/gin-gonic/gin"
 )
 
@@ -28,7 +30,7 @@ func main() {
 	if consulPort == "" {
 		consulPort = "8500"
 	}
-	consulURL := fmt.Sprintf("%s:%s", consulHost, consulPort)
+	consulURL := net.JoinHostPort(consulHost, consulPort)
 
 	// Initialize Consul Registry
 	registry, err := discovery.NewConsulRegistry(consulURL)

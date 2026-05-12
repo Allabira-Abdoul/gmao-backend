@@ -1,0 +1,606 @@
+{
+	"info": {
+		"_postman_id": "gmao-backend-collection",
+		"name": "GMAO Backend API",
+		"description": "Collection complète pour tester les API du backend GMAO — User, Asset et Maintenance services.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8080",
+			"type": "string"
+		},
+		{
+			"key": "asset_url",
+			"value": "http://localhost:8081",
+			"type": "string"
+		},
+		{
+			"key": "maintenance_url",
+			"value": "http://localhost:8082",
+			"type": "string"
+		},
+		{
+			"key": "gateway_url",
+			"value": "http://localhost:9090",
+			"type": "string"
+		},
+		{
+			"key": "access_token",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "refresh_token",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "user_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "equipement_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "ordre_travail_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "intervention_id",
+			"value": "",
+			"type": "string"
+		}
+	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{access_token}}",
+				"type": "string"
+			}
+		]
+	},
+	"item": [
+		{
+			"name": "🔐 Authentication",
+			"item": [
+				{
+					"name": "Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"if (jsonData.data && jsonData.data.access_token) {",
+									"    pm.collectionVariables.set('access_token', jsonData.data.access_token);",
+									"    pm.collectionVariables.set('refresh_token', jsonData.data.refresh_token);",
+									"    pm.collectionVariables.set('user_id', jsonData.data.user.id_utilisateur);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"admin@gmao.local\",\n    \"mot_de_passe\": \"Admin@123\"\n}"
+						},
+						"url": {
+							"raw": "{{gateway_url}}/auth/login",
+							"host": ["{{gateway_url}}"],
+							"path": ["auth", "login"]
+						}
+					}
+				},
+				{
+					"name": "Refresh Token",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"if (jsonData.data && jsonData.data.access_token) {",
+									"    pm.collectionVariables.set('access_token', jsonData.data.access_token);",
+									"    pm.collectionVariables.set('refresh_token', jsonData.data.refresh_token);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"refresh_token\": \"{{refresh_token}}\"\n}"
+						},
+						"url": {
+							"raw": "{{gateway_url}}/auth/refresh",
+							"host": ["{{gateway_url}}"],
+							"path": ["auth", "refresh"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "👤 Users",
+			"item": [
+				{
+					"name": "Get Current User (Me)",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{gateway_url}}/users/me",
+							"host": ["{{gateway_url}}"],
+							"path": ["users", "me"]
+						}
+					}
+				},
+				{
+					"name": "List Users",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{gateway_url}}/users?page=1&per_page=20",
+							"host": ["{{gateway_url}}"],
+							"path": ["users"],
+							"query": [
+								{ "key": "page", "value": "1" },
+								{ "key": "per_page", "value": "20" }
+							]
+						}
+					}
+				},
+				{
+					"name": "Get User By ID",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{gateway_url}}/users/{{user_id}}",
+							"host": ["{{gateway_url}}"],
+							"path": ["users", "{{user_id}}"]
+						}
+					}
+				},
+				{
+					"name": "Create User",
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"nom_complet\": \"Jean Dupont\",\n    \"email\": \"jean.dupont@gmao.local\",\n    \"mot_de_passe\": \"Password@123\",\n    \"id_role\": \"<ROLE_UUID>\"\n}"
+						},
+						"url": {
+							"raw": "{{gateway_url}}/users",
+							"host": ["{{gateway_url}}"],
+							"path": ["users"]
+						}
+					}
+				},
+				{
+					"name": "Update User",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"nom_complet\": \"Jean Dupont Updated\"\n}"
+						},
+						"url": {
+							"raw": "{{gateway_url}}/users/{{user_id}}",
+							"host": ["{{gateway_url}}"],
+							"path": ["users", "{{user_id}}"]
+						}
+					}
+				},
+				{
+					"name": "Delete User",
+					"request": {
+						"method": "DELETE",
+						"url": {
+							"raw": "{{gateway_url}}/users/{{user_id}}",
+							"host": ["{{gateway_url}}"],
+							"path": ["users", "{{user_id}}"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "⚙️ Equipements (Asset Service)",
+			"item": [
+				{
+					"name": "Health Check",
+					"request": {
+						"auth": { "type": "noauth" },
+						"method": "GET",
+						"url": {
+							"raw": "{{asset_url}}/health",
+							"host": ["{{asset_url}}"],
+							"path": ["health"]
+						}
+					}
+				},
+				{
+					"name": "List Equipements",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{gateway_url}}/equipements?page=1&per_page=20",
+							"host": ["{{gateway_url}}"],
+							"path": ["equipements"],
+							"query": [
+								{ "key": "page", "value": "1" },
+								{ "key": "per_page", "value": "20" }
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Equipement By ID",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{gateway_url}}/equipements/{{equipement_id}}",
+							"host": ["{{gateway_url}}"],
+							"path": ["equipements", "{{equipement_id}}"]
+						}
+					}
+				},
+				{
+					"name": "Create Equipement",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"if (jsonData.data && jsonData.data.id_equipement) {",
+									"    pm.collectionVariables.set('equipement_id', jsonData.data.id_equipement);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"nom\": \"Compresseur Atlas Copco GA-90\",\n    \"code\": \"COMP-001\",\n    \"description\": \"Compresseur à vis rotatif pour air comprimé industriel\",\n    \"date_acquisition\": \"2024-03-15\",\n    \"localisation\": \"Atelier A - Zone 3\",\n    \"criticite\": \"HAUTE\"\n}"
+						},
+						"url": {
+							"raw": "{{gateway_url}}/equipements",
+							"host": ["{{gateway_url}}"],
+							"path": ["equipements"]
+						}
+					}
+				},
+				{
+					"name": "Update Equipement",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"statut\": \"EN_MAINTENANCE\",\n    \"localisation\": \"Atelier B - Zone 1\"\n}"
+						},
+						"url": {
+							"raw": "{{gateway_url}}/equipements/{{equipement_id}}",
+							"host": ["{{gateway_url}}"],
+							"path": ["equipements", "{{equipement_id}}"]
+						}
+					}
+				},
+				{
+					"name": "Delete Equipement",
+					"request": {
+						"method": "DELETE",
+						"url": {
+							"raw": "{{gateway_url}}/equipements/{{equipement_id}}",
+							"host": ["{{gateway_url}}"],
+							"path": ["equipements", "{{equipement_id}}"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "🔧 Ordres de Travail (Maintenance Service)",
+			"item": [
+				{
+					"name": "Health Check",
+					"request": {
+						"auth": { "type": "noauth" },
+						"method": "GET",
+						"url": {
+							"raw": "{{maintenance_url}}/health",
+							"host": ["{{maintenance_url}}"],
+							"path": ["health"]
+						}
+					}
+				},
+				{
+					"name": "List Ordres de Travail",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{gateway_url}}/ordres-travail?page=1&per_page=20",
+							"host": ["{{gateway_url}}"],
+							"path": ["ordres-travail"],
+							"query": [
+								{ "key": "page", "value": "1" },
+								{ "key": "per_page", "value": "20" }
+							]
+						}
+					}
+				},
+				{
+					"name": "List OT by Equipement",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{gateway_url}}/ordres-travail?equipement_id={{equipement_id}}",
+							"host": ["{{gateway_url}}"],
+							"path": ["ordres-travail"],
+							"query": [
+								{ "key": "equipement_id", "value": "{{equipement_id}}" }
+							]
+						}
+					}
+				},
+				{
+					"name": "List OT by Statut",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{gateway_url}}/ordres-travail?statut=PLANIFIE",
+							"host": ["{{gateway_url}}"],
+							"path": ["ordres-travail"],
+							"query": [
+								{ "key": "statut", "value": "PLANIFIE" }
+							]
+						}
+					}
+				},
+				{
+					"name": "List OT by Assignee",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{gateway_url}}/ordres-travail?assigne_id={{user_id}}",
+							"host": ["{{gateway_url}}"],
+							"path": ["ordres-travail"],
+							"query": [
+								{ "key": "assigne_id", "value": "{{user_id}}" }
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Ordre de Travail By ID",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{gateway_url}}/ordres-travail/{{ordre_travail_id}}",
+							"host": ["{{gateway_url}}"],
+							"path": ["ordres-travail", "{{ordre_travail_id}}"]
+						}
+					}
+				},
+				{
+					"name": "Create Ordre de Travail",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"if (jsonData.data && jsonData.data.id_ordre_travail) {",
+									"    pm.collectionVariables.set('ordre_travail_id', jsonData.data.id_ordre_travail);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"titre\": \"Vidange compresseur GA-90\",\n    \"description\": \"Vidange huile et remplacement filtre air\",\n    \"type_maintenance\": \"PREVENTIVE\",\n    \"priorite\": \"MOYENNE\",\n    \"id_equipement\": \"{{equipement_id}}\",\n    \"date_debut_prevue\": \"2026-05-20T08:00:00Z\",\n    \"date_fin_prevue\": \"2026-05-20T12:00:00Z\",\n    \"commentaire\": \"Maintenance planifiée tous les 3 mois\"\n}"
+						},
+						"url": {
+							"raw": "{{gateway_url}}/ordres-travail",
+							"host": ["{{gateway_url}}"],
+							"path": ["ordres-travail"]
+						}
+					}
+				},
+				{
+					"name": "Update Ordre de Travail (Start)",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"statut\": \"EN_COURS\",\n    \"date_debut_reelle\": \"2026-05-20T08:30:00Z\"\n}"
+						},
+						"url": {
+							"raw": "{{gateway_url}}/ordres-travail/{{ordre_travail_id}}",
+							"host": ["{{gateway_url}}"],
+							"path": ["ordres-travail", "{{ordre_travail_id}}"]
+						}
+					}
+				},
+				{
+					"name": "Update Ordre de Travail (Complete)",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"statut\": \"TERMINE\",\n    \"date_fin_reelle\": \"2026-05-20T11:45:00Z\",\n    \"commentaire\": \"Terminé avec succès. Filtre et huile remplacés.\"\n}"
+						},
+						"url": {
+							"raw": "{{gateway_url}}/ordres-travail/{{ordre_travail_id}}",
+							"host": ["{{gateway_url}}"],
+							"path": ["ordres-travail", "{{ordre_travail_id}}"]
+						}
+					}
+				},
+				{
+					"name": "Delete Ordre de Travail",
+					"request": {
+						"method": "DELETE",
+						"url": {
+							"raw": "{{gateway_url}}/ordres-travail/{{ordre_travail_id}}",
+							"host": ["{{gateway_url}}"],
+							"path": ["ordres-travail", "{{ordre_travail_id}}"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "🛠️ Interventions (Maintenance Service)",
+			"item": [
+				{
+					"name": "List Interventions by Ordre de Travail",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{gateway_url}}/interventions?ordre_travail_id={{ordre_travail_id}}",
+							"host": ["{{gateway_url}}"],
+							"path": ["interventions"],
+							"query": [
+								{ "key": "ordre_travail_id", "value": "{{ordre_travail_id}}" }
+							]
+						}
+					}
+				},
+				{
+					"name": "List Interventions by Technicien",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{gateway_url}}/interventions?technicien_id={{user_id}}",
+							"host": ["{{gateway_url}}"],
+							"path": ["interventions"],
+							"query": [
+								{ "key": "technicien_id", "value": "{{user_id}}" }
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Intervention By ID",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{gateway_url}}/interventions/{{intervention_id}}",
+							"host": ["{{gateway_url}}"],
+							"path": ["interventions", "{{intervention_id}}"]
+						}
+					}
+				},
+				{
+					"name": "Create Intervention",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"if (jsonData.data && jsonData.data.id_intervention) {",
+									"    pm.collectionVariables.set('intervention_id', jsonData.data.id_intervention);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"id_ordre_travail\": \"{{ordre_travail_id}}\",\n    \"id_technicien\": \"{{user_id}}\",\n    \"date_debut\": \"2026-05-20T08:30:00Z\"\n}"
+						},
+						"url": {
+							"raw": "{{gateway_url}}/interventions",
+							"host": ["{{gateway_url}}"],
+							"path": ["interventions"]
+						}
+					}
+				},
+				{
+					"name": "Update Intervention (Complete)",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"statut\": \"TERMINEE\",\n    \"date_fin\": \"2026-05-20T11:30:00Z\",\n    \"duree_minutes\": 180,\n    \"rapport_intervention\": \"Vidange huile effectuée. Filtre air remplacé. Contrôle visuel OK.\",\n    \"actions_effectuees\": \"1. Vidange huile\\n2. Remplacement filtre air\\n3. Contrôle visuel\"\n}"
+						},
+						"url": {
+							"raw": "{{gateway_url}}/interventions/{{intervention_id}}",
+							"host": ["{{gateway_url}}"],
+							"path": ["interventions", "{{intervention_id}}"]
+						}
+					}
+				},
+				{
+					"name": "Delete Intervention",
+					"request": {
+						"method": "DELETE",
+						"url": {
+							"raw": "{{gateway_url}}/interventions/{{intervention_id}}",
+							"host": ["{{gateway_url}}"],
+							"path": ["interventions", "{{intervention_id}}"]
+						}
+					}
+				}
+			]
+		}
+	]
+}

@@ -7,8 +7,13 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	httphandler "backend-gmao/apps/maintenance-service/internal/adapters/primary/http"
+	pgadapter "backend-gmao/apps/maintenance-service/internal/adapters/secondary/postgres"
+	"backend-gmao/apps/maintenance-service/internal/application"
+	"backend-gmao/apps/maintenance-service/internal/core/domain"
+	"backend-gmao/pkg/auth"
 	"backend-gmao/pkg/db"
 	"backend-gmao/pkg/discovery"
 
@@ -16,64 +21,92 @@ import (
 )
 
 func main() {
-	// Consul Config
-	consulHost := os.Getenv("CONSUL_HOST")
-	if consulHost == "" {
-		consulHost = "127.0.0.1"
-	}
-	consulPort := os.Getenv("CONSUL_PORT")
-	if consulPort == "" {
-		consulPort = "8500"
-	}
+	// --- Consul Config ---
+	consulHost := getEnv("CONSUL_HOST", "127.0.0.1")
+	consulPort := getEnv("CONSUL_PORT", "8500")
 	consulURL := net.JoinHostPort(consulHost, consulPort)
 
-	// Initialize Consul Registry
 	registry, err := discovery.NewConsulRegistry(consulURL)
 	if err != nil {
 		log.Fatalf("Failed to create consul registry: %v", err)
 	}
 
-	// Service Config
-	serviceID := fmt.Sprintf("maintenance-service-%s", os.Getenv("INSTANCE_ID"))
-	if os.Getenv("INSTANCE_ID") == "" {
-		serviceID = "maintenance-service-1"
-	}
+	// --- Service Config ---
+	serviceID := fmt.Sprintf("maintenance-service-%s", getEnv("INSTANCE_ID", "1"))
 	serviceName := "maintenance-service"
-	host := os.Getenv("SERVICE_HOST")
-	if host == "" {
-		host = "127.0.0.1"
-	}
+	host := getEnv("SERVICE_HOST", "127.0.0.1")
 
-	// Default port for local testing based on service
-	port := 8080 // We will override this if PORT env var is set
+	port := 8080
 	if envPort := os.Getenv("PORT"); envPort != "" {
 		fmt.Sscanf(envPort, "%d", &port)
 	}
 
-	// Database Connection (Placeholder)
+	// --- Database Connection ---
 	dsn := os.Getenv("DATABASE_URL")
-	if dsn != "" {
-		_, err := db.InitPostgres(dsn)
-		if err != nil {
-			log.Printf("Warning: Failed to connect to DB: %v", err)
-		} else {
-			log.Println("Successfully connected to Postgres database")
+	if dsn == "" {
+		log.Fatal("DATABASE_URL environment variable is required")
+	}
+
+	database, err := db.InitPostgres(dsn)
+	if err != nil {
+		log.Fatalf("Failed to connect to database: %v", err)
+	}
+
+	// --- Auto-Migrate Tables ---
+	log.Println("Running database migrations...")
+
+	if err := database.AutoMigrate(&domain.OrdreTravail{}); err != nil {
+		log.Fatalf("Failed to migrate OrdreTravail table: %v", err)
+	}
+
+	if err := database.AutoMigrate(&domain.Intervention{}); err != nil {
+		log.Fatalf("Failed to migrate Intervention table: %v", err)
+	}
+
+	log.Println("Database migrations completed")
+
+	// --- JWT Manager ---
+	jwtSecret := getEnv("JWT_SECRET", "gmao-dev-secret-change-in-production")
+	accessExpiry := 15 * time.Minute
+	refreshExpiry := 7 * 24 * time.Hour
+
+	if exp := os.Getenv("JWT_ACCESS_EXPIRY"); exp != "" {
+		if d, err := time.ParseDuration(exp); err == nil {
+			accessExpiry = d
+		}
+	}
+	if exp := os.Getenv("JWT_REFRESH_EXPIRY"); exp != "" {
+		if d, err := time.ParseDuration(exp); err == nil {
+			refreshExpiry = d
 		}
 	}
 
-	// Register with Consul
+	jwtManager := auth.NewJWTManager(jwtSecret, accessExpiry, refreshExpiry)
+
+	// --- Repositories (Secondary Adapters) ---
+	otRepo := pgadapter.NewOrdreTravailRepository(database)
+	interventionRepo := pgadapter.NewInterventionRepository(database)
+
+	// --- Application Services ---
+	otService := application.NewOrdreTravailService(otRepo)
+	interventionService := application.NewInterventionService(interventionRepo)
+
+	// --- Register with Consul ---
 	err = registry.Register(serviceID, serviceName, host, port)
 	if err != nil {
 		log.Fatalf("Failed to register service: %v", err)
 	}
 
-	// Initialize Gin router
+	// --- Initialize Gin Router ---
 	router := gin.Default()
 
-	// Register Health Route
+	// Health check
 	router.GET("/health", httphandler.HealthCheck)
 
-	// Start Server
+	// Register all routes
+	httphandler.RegisterRoutes(router, jwtManager, otService, interventionService)
+
+	// --- Start Server ---
 	go func() {
 		addr := fmt.Sprintf(":%d", port)
 		log.Printf("Starting %s on %s\n", serviceName, addr)
@@ -82,7 +115,7 @@ func main() {
 		}
 	}()
 
-	// Graceful shutdown
+	// --- Graceful Shutdown ---
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
@@ -92,4 +125,11 @@ func main() {
 		log.Printf("Failed to deregister service: %v", err)
 	}
 	log.Println("Service stopped")
+}
+
+func getEnv(key, fallback string) string {
+	if val := os.Getenv(key); val != "" {
+		return val
+	}
+	return fallback
 }

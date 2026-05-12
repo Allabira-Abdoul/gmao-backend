@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"net"
 	"os"
 	"os/signal"
 	"syscall"
@@ -15,6 +16,7 @@ import (
 	"backend-gmao/pkg/auth"
 	"backend-gmao/pkg/db"
 	"backend-gmao/pkg/discovery"
+
 	"github.com/gin-gonic/gin"
 )
 
@@ -22,7 +24,7 @@ func main() {
 	// --- Consul Config ---
 	consulHost := getEnv("CONSUL_HOST", "127.0.0.1")
 	consulPort := getEnv("CONSUL_PORT", "8500")
-	consulURL := fmt.Sprintf("%s:%s", consulHost, consulPort)
+	consulURL := net.JoinHostPort(consulHost, consulPort)
 
 	registry, err := discovery.NewConsulRegistry(consulURL)
 	if err != nil {

@@ -1,0 +1,3 @@
+## 2024-05-24 - API Response Abstraction
+**Learning:** Returning `interface{}` in standard `response.APIResponse.Data` causes consumers to decode twice if they want strongly typed structs. However, this is for HTTP communication. For handlers in an API, the main issue is that handlers themselves do parsing, service calling, error mapping, and response building.
+**Action:** The API Handlers currently mix request parsing, query parameter default assignments, domain error translation, and HTTP response generation. This violates SRP (Single Responsibility Principle) at the handler layer. A structural boost is to extract the pagination logic.

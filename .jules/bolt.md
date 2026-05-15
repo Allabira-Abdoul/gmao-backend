@@ -23,3 +23,7 @@
 ## 2026-05-04 - Replacing fmt.Sprintf with net.JoinHostPort
 **Learning:** `fmt.Sprintf` is allocation-heavy and uses reflection, which degrades performance in hot paths. Furthermore, when dealing with IPv6 addresses, `%s:%d` might format addresses incorrectly (e.g., `::1:8080` instead of `[::1]:8080`), leading to bugs.
 **Action:** Use `net.JoinHostPort` along with `strconv.Itoa` to format `host:port` pairs. This avoids string allocations and reflection overhead from `fmt.Sprintf`, while being functionally correct and safe for IPv6 parsing.
+
+## 2024-06-11 - Preventing O(N) Allocations in Rate Limiter Hot Path
+**Learning:** In the rate limiter middleware, which is executed on every single incoming request at the API Gateway, iterating through a slice to build a new `validTimes` slice creates continuous O(N) memory allocations and copies. This puts unnecessary pressure on the garbage collector and drastically increases latency per request.
+**Action:** When filtering chronologically ordered time series data (like request timestamps), avoid allocating new slices. Instead, find the cutoff index and use in-place slice sub-slicing (`times = times[i:]`) to trim expired entries with zero allocations.

@@ -38,18 +38,22 @@ func (rl *rateLimiter) cleanup() {
 	defer rl.mu.Unlock()
 
 	now := time.Now()
+	cutoff := now.Add(-rl.window)
+
 	for ip, times := range rl.requests {
-		validTimes := make([]time.Time, 0)
-		for _, t := range times {
-			if now.Sub(t) < rl.window {
-				validTimes = append(validTimes, t)
-			}
+		// ⚡ Bolt Optimization: Slicing avoids allocating a new slice on every cleanup.
+		// Since times are appended chronologically, we find the first valid one.
+		i := 0
+		for i < len(times) && !times[i].After(cutoff) {
+			i++
 		}
 
-		if len(validTimes) == 0 {
+		if i == len(times) {
+			// All times are expired
 			delete(rl.requests, ip)
 		} else {
-			rl.requests[ip] = validTimes
+			// Keep valid times
+			rl.requests[ip] = times[i:]
 		}
 	}
 }
@@ -60,29 +64,33 @@ func (rl *rateLimiter) allow(ip string) bool {
 
 	now := time.Now()
 
-	// Initialize if not exists
-	if _, exists := rl.requests[ip]; !exists {
-		rl.requests[ip] = []time.Time{now}
+	times, exists := rl.requests[ip]
+	if !exists {
+		// Initialize if not exists
+		// Capacity set to a small number to reduce initial reallocations
+		t := make([]time.Time, 0, 4)
+		rl.requests[ip] = append(t, now)
 		return true
 	}
 
-	// Filter out old requests
-	validTimes := make([]time.Time, 0)
-	for _, t := range rl.requests[ip] {
-		if now.Sub(t) < rl.window {
-			validTimes = append(validTimes, t)
-		}
+	// ⚡ Bolt Optimization: Slicing avoids allocating a new slice on every request.
+	// Since times are appended chronologically, we just find the first valid one.
+	cutoff := now.Add(-rl.window)
+	i := 0
+	for i < len(times) && !times[i].After(cutoff) {
+		i++
 	}
 
+	times = times[i:]
+
 	// Check if limit exceeded
-	if len(validTimes) >= rl.limit {
-		rl.requests[ip] = validTimes // keep valid times but deny
+	if len(times) >= rl.limit {
+		rl.requests[ip] = times // keep valid times but deny
 		return false
 	}
 
 	// Allow request and record time
-	validTimes = append(validTimes, now)
-	rl.requests[ip] = validTimes
+	rl.requests[ip] = append(times, now)
 	return true
 }
 

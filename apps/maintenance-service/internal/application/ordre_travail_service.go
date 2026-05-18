@@ -108,16 +108,8 @@ func (s *OrdreTravailService) GetOrdreTravailByID(ctx context.Context, id uuid.U
 }
 
 // ListOrdresTravail returns a paginated list of work orders.
-func (s *OrdreTravailService) ListOrdresTravail(ctx context.Context, page, perPage int) ([]domain.OrdreTravailResponse, int64, error) {
-	if page < 1 {
-		page = 1
-	}
-	if perPage < 1 || perPage > 100 {
-		perPage = 20
-	}
-	offset := (page - 1) * perPage
-
-	ordres, total, err := s.repo.List(ctx, perPage, offset)
+func (s *OrdreTravailService) ListOrdresTravail(ctx context.Context, limit, offset int) ([]domain.OrdreTravailResponse, int64, error) {
+	ordres, total, err := s.repo.List(ctx, limit, offset)
 	if err != nil {
 		return nil, 0, fmt.Errorf("failed to list work orders: %w", err)
 	}
@@ -130,16 +122,8 @@ func (s *OrdreTravailService) ListOrdresTravail(ctx context.Context, page, perPa
 }
 
 // ListByEquipement returns work orders for a specific equipment.
-func (s *OrdreTravailService) ListByEquipement(ctx context.Context, equipementID uuid.UUID, page, perPage int) ([]domain.OrdreTravailResponse, int64, error) {
-	if page < 1 {
-		page = 1
-	}
-	if perPage < 1 || perPage > 100 {
-		perPage = 20
-	}
-	offset := (page - 1) * perPage
-
-	ordres, total, err := s.repo.ListByEquipement(ctx, equipementID, perPage, offset)
+func (s *OrdreTravailService) ListByEquipement(ctx context.Context, equipementID uuid.UUID, limit, offset int) ([]domain.OrdreTravailResponse, int64, error) {
+	ordres, total, err := s.repo.ListByEquipement(ctx, equipementID, limit, offset)
 	if err != nil {
 		return nil, 0, fmt.Errorf("failed to list work orders by equipement: %w", err)
 	}
@@ -152,16 +136,8 @@ func (s *OrdreTravailService) ListByEquipement(ctx context.Context, equipementID
 }
 
 // ListByStatut returns work orders by status.
-func (s *OrdreTravailService) ListByStatut(ctx context.Context, statut domain.OrdreTravailStatut, page, perPage int) ([]domain.OrdreTravailResponse, int64, error) {
-	if page < 1 {
-		page = 1
-	}
-	if perPage < 1 || perPage > 100 {
-		perPage = 20
-	}
-	offset := (page - 1) * perPage
-
-	ordres, total, err := s.repo.ListByStatut(ctx, statut, perPage, offset)
+func (s *OrdreTravailService) ListByStatut(ctx context.Context, statut domain.OrdreTravailStatut, limit, offset int) ([]domain.OrdreTravailResponse, int64, error) {
+	ordres, total, err := s.repo.ListByStatut(ctx, statut, limit, offset)
 	if err != nil {
 		return nil, 0, fmt.Errorf("failed to list work orders by statut: %w", err)
 	}
@@ -174,16 +150,8 @@ func (s *OrdreTravailService) ListByStatut(ctx context.Context, statut domain.Or
 }
 
 // ListByAssigne returns work orders assigned to a specific user.
-func (s *OrdreTravailService) ListByAssigne(ctx context.Context, utilisateurID uuid.UUID, page, perPage int) ([]domain.OrdreTravailResponse, int64, error) {
-	if page < 1 {
-		page = 1
-	}
-	if perPage < 1 || perPage > 100 {
-		perPage = 20
-	}
-	offset := (page - 1) * perPage
-
-	ordres, total, err := s.repo.ListByAssigne(ctx, utilisateurID, perPage, offset)
+func (s *OrdreTravailService) ListByAssigne(ctx context.Context, utilisateurID uuid.UUID, limit, offset int) ([]domain.OrdreTravailResponse, int64, error) {
+	ordres, total, err := s.repo.ListByAssigne(ctx, utilisateurID, limit, offset)
 	if err != nil {
 		return nil, 0, fmt.Errorf("failed to list work orders by assigne: %w", err)
 	}

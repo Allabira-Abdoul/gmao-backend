@@ -90,17 +90,8 @@ func (s *EquipementService) GetEquipementByCode(ctx context.Context, code string
 }
 
 // ListEquipements returns a paginated list of equipements.
-func (s *EquipementService) ListEquipements(ctx context.Context, page, perPage int) ([]domain.EquipementResponse, int64, error) {
-	if page < 1 {
-		page = 1
-	}
-	if perPage < 1 || perPage > 100 {
-		perPage = 20
-	}
-
-	offset := (page - 1) * perPage
-
-	equipements, total, err := s.repo.List(ctx, perPage, offset)
+func (s *EquipementService) ListEquipements(ctx context.Context, limit, offset int) ([]domain.EquipementResponse, int64, error) {
+	equipements, total, err := s.repo.List(ctx, limit, offset)
 	if err != nil {
 		return nil, 0, fmt.Errorf("failed to list equipements: %w", err)
 	}

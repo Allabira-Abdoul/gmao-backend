@@ -18,12 +18,16 @@ var (
 
 // OrdreTravailService implements the OrdreTravailService port.
 type OrdreTravailService struct {
-	repo ports.OrdreTravailRepository
+	repo      ports.OrdreTravailRepository
+	publisher *MaintenanceEventPublisher
 }
 
 // NewOrdreTravailService creates a new OrdreTravailService instance.
-func NewOrdreTravailService(repo ports.OrdreTravailRepository) *OrdreTravailService {
-	return &OrdreTravailService{repo: repo}
+func NewOrdreTravailService(repo ports.OrdreTravailRepository, publisher *MaintenanceEventPublisher) *OrdreTravailService {
+	return &OrdreTravailService{
+		repo:      repo,
+		publisher: publisher,
+	}
 }
 
 // generateReference creates a unique reference for a work order (OT-YYYYMMDD-XXXX).
@@ -64,6 +68,14 @@ func (s *OrdreTravailService) CreateOrdreTravail(ctx context.Context, req *domai
 		ordre.IDUtilisateurAssigne = &assigneID
 	}
 
+	if req.IDEquipeAssigne != nil {
+		equipeID, err := uuid.Parse(*req.IDEquipeAssigne)
+		if err != nil {
+			return nil, fmt.Errorf("invalid assigned team ID: %w", err)
+		}
+		ordre.IDEquipeAssigne = &equipeID
+	}
+
 	if req.DateDebutPrevue != nil {
 		t, err := time.Parse(time.RFC3339, *req.DateDebutPrevue)
 		if err != nil {
@@ -94,6 +106,11 @@ func (s *OrdreTravailService) CreateOrdreTravail(ctx context.Context, req *domai
 	}
 
 	resp := created.ToResponse()
+
+	if s.publisher != nil {
+		s.publisher.PublishWorkOrderCreated(ctx, &resp)
+	}
+
 	return &resp, nil
 }
 
@@ -221,6 +238,20 @@ func (s *OrdreTravailService) UpdateOrdreTravail(ctx context.Context, id uuid.UU
 		}
 		ordre.IDUtilisateurAssigne = &assigneID
 	}
+	if req.IDEquipeAssigne != nil {
+		equipeID, err := uuid.Parse(*req.IDEquipeAssigne)
+		if err != nil {
+			return nil, fmt.Errorf("invalid assigned team ID: %w", err)
+		}
+		ordre.IDEquipeAssigne = &equipeID
+	}
+	if req.IDCurrentState != nil {
+		stateID, err := uuid.Parse(*req.IDCurrentState)
+		if err != nil {
+			return nil, fmt.Errorf("invalid current state ID: %w", err)
+		}
+		ordre.IDCurrentState = &stateID
+	}
 	if req.DateDebutPrevue != nil {
 		t, err := time.Parse(time.RFC3339, *req.DateDebutPrevue)
 		if err != nil {
@@ -248,6 +279,12 @@ func (s *OrdreTravailService) UpdateOrdreTravail(ctx context.Context, id uuid.UU
 			return nil, fmt.Errorf("invalid date_fin_reelle: %w", err)
 		}
 		ordre.DateFinReelle = &t
+
+		// Auto-calculate TempsPasse (in minutes) if DateDebutReelle is set
+		if ordre.DateDebutReelle != nil {
+			duration := ordre.DateFinReelle.Sub(*ordre.DateDebutReelle)
+			ordre.TempsPasse = int(duration.Minutes())
+		}
 	}
 	if req.Commentaire != nil {
 		ordre.Commentaire = *req.Commentaire
@@ -263,6 +300,11 @@ func (s *OrdreTravailService) UpdateOrdreTravail(ctx context.Context, id uuid.UU
 	}
 
 	resp := updated.ToResponse()
+
+	if s.publisher != nil {
+		s.publisher.PublishWorkOrderUpdated(ctx, &resp)
+	}
+
 	return &resp, nil
 }
 

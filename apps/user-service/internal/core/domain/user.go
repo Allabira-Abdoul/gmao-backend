@@ -24,6 +24,8 @@ type User struct {
 	StatutCompte  AccountStatus `gorm:"column:statut_compte;type:varchar(20);default:'ACTIVE'" json:"statut_compte"`
 	RoleID        uuid.UUID     `gorm:"column:id_role;type:uuid;not null" json:"id_role"`
 	Role          Role          `gorm:"foreignKey:RoleID;references:IDRole;constraint:OnUpdate:CASCADE,OnDelete:RESTRICT;" json:"role,omitempty"`
+	IDEquipe      *uuid.UUID    `gorm:"column:id_equipe;type:uuid" json:"id_equipe"`
+	Equipe        *Equipe       `gorm:"foreignKey:IDEquipe;references:IDEquipe;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;" json:"equipe,omitempty"`
 	CreatedAt     time.Time     `gorm:"column:created_at" json:"created_at"`
 	UpdatedAt     time.Time     `gorm:"column:updated_at" json:"updated_at"`
 }
@@ -38,11 +40,13 @@ type UserResponse struct {
 	IDUtilisateur uuid.UUID     `json:"id_utilisateur"`
 	NomComplet    string        `json:"nom_complet"`
 	Email         string        `json:"email"`
-	StatutCompte  AccountStatus `json:"statut_compte"`
-	IDRole        uuid.UUID     `json:"id_role"`
-	Role          *RoleResponse `json:"role,omitempty"`
-	CreatedAt     time.Time     `json:"created_at"`
-	UpdatedAt     time.Time     `json:"updated_at"`
+	StatutCompte  AccountStatus   `json:"statut_compte"`
+	IDRole        uuid.UUID       `json:"id_role"`
+	Role          *RoleResponse   `json:"role,omitempty"`
+	IDEquipe      *uuid.UUID      `json:"id_equipe,omitempty"`
+	Equipe        *EquipeResponse `json:"equipe,omitempty"`
+	CreatedAt     time.Time       `json:"created_at"`
+	UpdatedAt     time.Time       `json:"updated_at"`
 }
 
 // ToResponse converts a User to a UserResponse (safe for API output).
@@ -60,6 +64,12 @@ func (u *User) ToResponse() UserResponse {
 	if u.Role.IDRole != uuid.Nil {
 		roleResp := u.Role.ToResponse()
 		resp.Role = &roleResp
+	}
+
+	resp.IDEquipe = u.IDEquipe
+	if u.Equipe != nil && u.Equipe.IDEquipe != uuid.Nil {
+		equipeResp := u.Equipe.ToResponse()
+		resp.Equipe = &equipeResp
 	}
 
 	return resp
@@ -109,4 +119,5 @@ type UpdateUserRequest struct {
 	Email        *string `json:"email,omitempty" binding:"omitempty,email"`
 	StatutCompte *string `json:"statut_compte,omitempty" binding:"omitempty,oneof=ACTIVE INACTIVE LOCKED"`
 	IDRole       *string `json:"id_role,omitempty" binding:"omitempty,uuid"`
+	IDEquipe     *string `json:"id_equipe,omitempty" binding:"omitempty,uuid"`
 }

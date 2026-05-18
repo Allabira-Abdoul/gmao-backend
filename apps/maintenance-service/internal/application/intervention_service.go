@@ -73,16 +73,8 @@ func (s *InterventionService) GetInterventionByID(ctx context.Context, id uuid.U
 }
 
 // ListByOrdreTravail returns interventions for a specific work order.
-func (s *InterventionService) ListByOrdreTravail(ctx context.Context, ordreTravailID uuid.UUID, page, perPage int) ([]domain.InterventionResponse, int64, error) {
-	if page < 1 {
-		page = 1
-	}
-	if perPage < 1 || perPage > 100 {
-		perPage = 20
-	}
-	offset := (page - 1) * perPage
-
-	interventions, total, err := s.repo.ListByOrdreTravail(ctx, ordreTravailID, perPage, offset)
+func (s *InterventionService) ListByOrdreTravail(ctx context.Context, ordreTravailID uuid.UUID, limit, offset int) ([]domain.InterventionResponse, int64, error) {
+	interventions, total, err := s.repo.ListByOrdreTravail(ctx, ordreTravailID, limit, offset)
 	if err != nil {
 		return nil, 0, fmt.Errorf("failed to list interventions: %w", err)
 	}
@@ -95,16 +87,8 @@ func (s *InterventionService) ListByOrdreTravail(ctx context.Context, ordreTrava
 }
 
 // ListByTechnicien returns interventions for a specific technician.
-func (s *InterventionService) ListByTechnicien(ctx context.Context, technicienID uuid.UUID, page, perPage int) ([]domain.InterventionResponse, int64, error) {
-	if page < 1 {
-		page = 1
-	}
-	if perPage < 1 || perPage > 100 {
-		perPage = 20
-	}
-	offset := (page - 1) * perPage
-
-	interventions, total, err := s.repo.ListByTechnicien(ctx, technicienID, perPage, offset)
+func (s *InterventionService) ListByTechnicien(ctx context.Context, technicienID uuid.UUID, limit, offset int) ([]domain.InterventionResponse, int64, error) {
+	interventions, total, err := s.repo.ListByTechnicien(ctx, technicienID, limit, offset)
 	if err != nil {
 		return nil, 0, fmt.Errorf("failed to list interventions by technicien: %w", err)
 	}

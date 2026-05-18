@@ -34,7 +34,7 @@ func (h *OrdreTravailHandler) ListOrdresTravail(c *gin.Context) {
 			response.Error(c, http.StatusBadRequest, "INVALID_ID", "Invalid equipement ID format")
 			return
 		}
-		ordres, total, err := h.service.ListByEquipement(c.Request.Context(), id, pagination.Page, pagination.PerPage)
+		ordres, total, err := h.service.ListByEquipement(c.Request.Context(), id, pagination.Limit, pagination.Offset)
 		if err != nil {
 			response.Error(c, http.StatusInternalServerError, "INTERNAL_ERROR", "Failed to list work orders")
 			return
@@ -44,7 +44,7 @@ func (h *OrdreTravailHandler) ListOrdresTravail(c *gin.Context) {
 	}
 
 	if statut := c.Query("statut"); statut != "" {
-		ordres, total, err := h.service.ListByStatut(c.Request.Context(), domain.OrdreTravailStatut(statut), pagination.Page, pagination.PerPage)
+		ordres, total, err := h.service.ListByStatut(c.Request.Context(), domain.OrdreTravailStatut(statut), pagination.Limit, pagination.Offset)
 		if err != nil {
 			response.Error(c, http.StatusInternalServerError, "INTERNAL_ERROR", "Failed to list work orders")
 			return
@@ -59,7 +59,7 @@ func (h *OrdreTravailHandler) ListOrdresTravail(c *gin.Context) {
 			response.Error(c, http.StatusBadRequest, "INVALID_ID", "Invalid user ID format")
 			return
 		}
-		ordres, total, err := h.service.ListByAssigne(c.Request.Context(), id, pagination.Page, pagination.PerPage)
+		ordres, total, err := h.service.ListByAssigne(c.Request.Context(), id, pagination.Limit, pagination.Offset)
 		if err != nil {
 			response.Error(c, http.StatusInternalServerError, "INTERNAL_ERROR", "Failed to list work orders")
 			return
@@ -68,7 +68,7 @@ func (h *OrdreTravailHandler) ListOrdresTravail(c *gin.Context) {
 		return
 	}
 
-	ordres, total, err := h.service.ListOrdresTravail(c.Request.Context(), pagination.Page, pagination.PerPage)
+	ordres, total, err := h.service.ListOrdresTravail(c.Request.Context(), pagination.Limit, pagination.Offset)
 	if err != nil {
 		response.Error(c, http.StatusInternalServerError, "INTERNAL_ERROR", "Failed to list work orders")
 		return

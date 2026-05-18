@@ -29,7 +29,7 @@ func (h *UserHandler) ListUsers(c *gin.Context) {
 	// Handlers should only orchestrate request data, not validate pagination logic.
 	pagination := response.GetPagination(c, 1, 20)
 
-	users, total, err := h.service.ListUsers(c.Request.Context(), pagination.Page, pagination.PerPage)
+	users, total, err := h.service.ListUsers(c.Request.Context(), pagination.Limit, pagination.Offset)
 	if err != nil {
 		response.Error(c, http.StatusInternalServerError, "INTERNAL_ERROR", "Failed to list users")
 		return

@@ -114,17 +114,8 @@ func (s *UserService) GetUserByIDInternal(ctx context.Context, id uuid.UUID) (*d
 }
 
 // ListUsers returns a paginated list of users.
-func (s *UserService) ListUsers(ctx context.Context, page, perPage int) ([]domain.UserResponse, int64, error) {
-	if page < 1 {
-		page = 1
-	}
-	if perPage < 1 || perPage > 100 {
-		perPage = 20
-	}
-
-	offset := (page - 1) * perPage
-
-	users, total, err := s.userRepo.FindAll(ctx, offset, perPage)
+func (s *UserService) ListUsers(ctx context.Context, limit, offset int) ([]domain.UserResponse, int64, error) {
+	users, total, err := s.userRepo.FindAll(ctx, offset, limit)
 	if err != nil {
 		return nil, 0, fmt.Errorf("failed to list users: %w", err)
 	}

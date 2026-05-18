@@ -3,6 +3,7 @@ package http
 import (
 	"backend-gmao/apps/maintenance-service/internal/application"
 	"backend-gmao/pkg/auth"
+	authdomain "backend-gmao/pkg/auth/domain"
 	"backend-gmao/pkg/middleware"
 	"github.com/gin-gonic/gin"
 )
@@ -24,21 +25,21 @@ func RegisterRoutes(
 		// Work Order CRUD
 		ordres := authenticated.Group("/ordres-travail")
 		{
-			ordres.GET("", otHandler.ListOrdresTravail)
-			ordres.GET("/:id", otHandler.GetOrdreTravail)
-			ordres.POST("", otHandler.CreateOrdreTravail)
-			ordres.PUT("/:id", otHandler.UpdateOrdreTravail)
-			ordres.DELETE("/:id", otHandler.DeleteOrdreTravail)
+			ordres.GET("", middleware.RequirePrivilege(authdomain.PrivilegeWorkOrderView), otHandler.ListOrdresTravail)
+			ordres.GET("/:id", middleware.RequirePrivilege(authdomain.PrivilegeWorkOrderView), otHandler.GetOrdreTravail)
+			ordres.POST("", middleware.RequirePrivilege(authdomain.PrivilegeWorkOrderCreate), otHandler.CreateOrdreTravail)
+			ordres.PUT("/:id", middleware.RequirePrivilege(authdomain.PrivilegeWorkOrderUpdate), otHandler.UpdateOrdreTravail)
+			ordres.DELETE("/:id", middleware.RequirePrivilege(authdomain.PrivilegeWorkOrderDelete), otHandler.DeleteOrdreTravail)
 		}
 
 		// Intervention CRUD
 		interventions := authenticated.Group("/interventions")
 		{
-			interventions.GET("", interventionHandler.ListInterventions)
-			interventions.GET("/:id", interventionHandler.GetIntervention)
-			interventions.POST("", interventionHandler.CreateIntervention)
-			interventions.PUT("/:id", interventionHandler.UpdateIntervention)
-			interventions.DELETE("/:id", interventionHandler.DeleteIntervention)
+			interventions.GET("", middleware.RequirePrivilege(authdomain.PrivilegeMaintenanceView), interventionHandler.ListInterventions)
+			interventions.GET("/:id", middleware.RequirePrivilege(authdomain.PrivilegeMaintenanceView), interventionHandler.GetIntervention)
+			interventions.POST("", middleware.RequirePrivilege(authdomain.PrivilegeMaintenancePlanCreate), interventionHandler.CreateIntervention)
+			interventions.PUT("/:id", middleware.RequirePrivilege(authdomain.PrivilegeMaintenancePlanUpdate), interventionHandler.UpdateIntervention)
+			interventions.DELETE("/:id", middleware.RequirePrivilege(authdomain.PrivilegeMaintenancePlanDelete), interventionHandler.DeleteIntervention)
 		}
 	}
 }

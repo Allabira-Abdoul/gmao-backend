@@ -1,12 +1,14 @@
 package application
 
 import (
+	authdomain "backend-gmao/pkg/auth/domain"
 	"context"
 	"errors"
 	"fmt"
 
 	"backend-gmao/apps/user-service/internal/core/domain"
 	"backend-gmao/apps/user-service/internal/core/ports"
+
 	"github.com/google/uuid"
 )
 
@@ -40,7 +42,7 @@ func (s *RoleService) CreateRole(ctx context.Context, req domain.CreateRoleReque
 	}
 
 	// Validate all privileges are system-defined
-	invalidPrivs := domain.ValidatePrivileges(req.Privileges)
+	invalidPrivs := authdomain.ValidatePrivileges(req.Privileges)
 	if len(invalidPrivs) > 0 {
 		return nil, fmt.Errorf("%w: %v", ErrInvalidPrivileges, invalidPrivs)
 	}
@@ -155,7 +157,7 @@ func (s *RoleService) SetRolePrivileges(ctx context.Context, roleID uuid.UUID, r
 	}
 
 	// Validate all privileges
-	invalidPrivs := domain.ValidatePrivileges(req.Privileges)
+	invalidPrivs := authdomain.ValidatePrivileges(req.Privileges)
 	if len(invalidPrivs) > 0 {
 		return nil, fmt.Errorf("%w: %v", ErrInvalidPrivileges, invalidPrivs)
 	}

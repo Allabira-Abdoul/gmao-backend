@@ -37,3 +37,7 @@
 **Vulnerability:** Missing global rate limit middleware in the API Gateway.
 **Learning:** While specific services like authentication implemented their own rate limits on sensitive endpoints (e.g. `/login`), relying solely on individual services leaves the gateway and other non-configured microservices vulnerable to generic denial of service (DoS) attacks.
 **Prevention:** Implement rate limiting middleware globally at the API Gateway layer to provide a foundational level of DoS protection and defense-in-depth across the system.
+## 2025-02-28 - [Missing Access Control Checks in Downstream Services]
+**Vulnerability:** The `asset-service` and `maintenance-service` lacked explicit privilege checks on their CRUD endpoints. Although the gateway restricted external access and the authentication service validated JWT tokens, any authenticated user could perform any action (including creation, updates, and deletion) on assets and work orders.
+**Learning:** Broken Access Control vulnerabilities can easily occur in microservices if role/privilege validation logic is centralized in one service but not properly applied in others. Relying solely on authentication is insufficient; explicit authorization checks are required at the endpoint level.
+**Prevention:** Ensure that all protected routes utilize the appropriate `middleware.RequirePrivilege(...)` check with specific, fine-grained domain privileges. Share authorization constants via a globally accessible `pkg/` module to enforce consistency across services.

@@ -3,6 +3,7 @@ package http
 import (
 	"backend-gmao/apps/asset-service/internal/application"
 	"backend-gmao/pkg/auth"
+	authdomain "backend-gmao/pkg/auth/domain"
 	"backend-gmao/pkg/middleware"
 	"github.com/gin-gonic/gin"
 )
@@ -22,11 +23,11 @@ func RegisterRoutes(
 		// Equipement CRUD
 		equipements := authenticated.Group("/equipements")
 		{
-			equipements.GET("", equipementHandler.ListEquipements)
-			equipements.GET("/:id", equipementHandler.GetEquipement)
-			equipements.POST("", equipementHandler.CreateEquipement)
-			equipements.PUT("/:id", equipementHandler.UpdateEquipement)
-			equipements.DELETE("/:id", equipementHandler.DeleteEquipement)
+			equipements.GET("", middleware.RequirePrivilege(authdomain.PrivilegeAssetView), equipementHandler.ListEquipements)
+			equipements.GET("/:id", middleware.RequirePrivilege(authdomain.PrivilegeAssetView), equipementHandler.GetEquipement)
+			equipements.POST("", middleware.RequirePrivilege(authdomain.PrivilegeAssetCreate), equipementHandler.CreateEquipement)
+			equipements.PUT("/:id", middleware.RequirePrivilege(authdomain.PrivilegeAssetUpdate), equipementHandler.UpdateEquipement)
+			equipements.DELETE("/:id", middleware.RequirePrivilege(authdomain.PrivilegeAssetDelete), equipementHandler.DeleteEquipement)
 		}
 	}
 }

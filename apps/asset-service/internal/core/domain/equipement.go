@@ -10,10 +10,10 @@ import (
 type EquipementStatus string
 
 const (
-	StatusEnService    EquipementStatus = "EN_SERVICE"
+	StatusEnService     EquipementStatus = "EN_SERVICE"
 	StatusEnMaintenance EquipementStatus = "EN_MAINTENANCE"
-	StatusEnPanne      EquipementStatus = "EN_PANNE"
-	StatusReforme      EquipementStatus = "REFORME"
+	StatusEnPanne       EquipementStatus = "EN_PANNE"
+	StatusReforme       EquipementStatus = "REFORME"
 )
 
 // Equipement represents a piece of machinery or tool in the GMAO system.

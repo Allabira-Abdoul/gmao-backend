@@ -33,7 +33,7 @@ func (h *InterventionHandler) ListInterventions(c *gin.Context) {
 			response.Error(c, http.StatusBadRequest, "INVALID_ID", "Invalid work order ID format")
 			return
 		}
-		interventions, total, err := h.service.ListByOrdreTravail(c.Request.Context(), id, pagination.Page, pagination.PerPage)
+		interventions, total, err := h.service.ListByOrdreTravail(c.Request.Context(), id, pagination.Limit, pagination.Offset)
 		if err != nil {
 			response.Error(c, http.StatusInternalServerError, "INTERNAL_ERROR", "Failed to list interventions")
 			return
@@ -49,7 +49,7 @@ func (h *InterventionHandler) ListInterventions(c *gin.Context) {
 			response.Error(c, http.StatusBadRequest, "INVALID_ID", "Invalid technician ID format")
 			return
 		}
-		interventions, total, err := h.service.ListByTechnicien(c.Request.Context(), id, pagination.Page, pagination.PerPage)
+		interventions, total, err := h.service.ListByTechnicien(c.Request.Context(), id, pagination.Limit, pagination.Offset)
 		if err != nil {
 			response.Error(c, http.StatusInternalServerError, "INTERNAL_ERROR", "Failed to list interventions")
 			return

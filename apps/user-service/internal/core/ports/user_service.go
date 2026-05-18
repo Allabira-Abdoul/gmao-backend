@@ -12,7 +12,7 @@ type UserServicePort interface {
 	CreateUser(ctx context.Context, req domain.CreateUserRequest) (*domain.UserResponse, error)
 	GetUserByID(ctx context.Context, id uuid.UUID) (*domain.UserResponse, error)
 	GetUserByEmail(ctx context.Context, email string) (*domain.InternalUserResponse, error)
-	ListUsers(ctx context.Context, page, perPage int) ([]domain.UserResponse, int64, error)
+	ListUsers(ctx context.Context, limit, offset int) ([]domain.UserResponse, int64, error)
 	UpdateUser(ctx context.Context, id uuid.UUID, req domain.UpdateUserRequest) (*domain.UserResponse, error)
 	DeleteUser(ctx context.Context, id uuid.UUID) error
 }

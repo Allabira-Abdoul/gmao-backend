@@ -18,17 +18,17 @@ const (
 // Intervention represents a maintenance intervention linked to a work order.
 // An OrdreTravail can have multiple Interventions (e.g., multiple visits to fix an issue).
 type Intervention struct {
-	IDIntervention    uuid.UUID          `gorm:"column:id_intervention;type:uuid;primaryKey;default:gen_random_uuid()" json:"id_intervention"`
-	IDOrdreTravail    uuid.UUID          `gorm:"column:id_ordre_travail;type:uuid;not null;index" json:"id_ordre_travail"`
-	IDTechnicien      uuid.UUID          `gorm:"column:id_technicien;type:uuid;not null" json:"id_technicien"`
-	Statut            InterventionStatut `gorm:"column:statut;type:varchar(20);default:'EN_COURS'" json:"statut"`
-	DateDebut         time.Time          `gorm:"column:date_debut;not null" json:"date_debut"`
-	DateFin           *time.Time         `gorm:"column:date_fin" json:"date_fin"`
-	DureeMinutes      *int               `gorm:"column:duree_minutes" json:"duree_minutes"`
-	RapportIntervention string           `gorm:"column:rapport_intervention;type:text" json:"rapport_intervention"`
-	ActionsEffectuees string             `gorm:"column:actions_effectuees;type:text" json:"actions_effectuees"`
-	CreatedAt         time.Time          `gorm:"column:created_at" json:"created_at"`
-	UpdatedAt         time.Time          `gorm:"column:updated_at" json:"updated_at"`
+	IDIntervention      uuid.UUID          `gorm:"column:id_intervention;type:uuid;primaryKey;default:gen_random_uuid()" json:"id_intervention"`
+	IDOrdreTravail      uuid.UUID          `gorm:"column:id_ordre_travail;type:uuid;not null;index" json:"id_ordre_travail"`
+	IDTechnicien        uuid.UUID          `gorm:"column:id_technicien;type:uuid;not null" json:"id_technicien"`
+	Statut              InterventionStatut `gorm:"column:statut;type:varchar(20);default:'EN_COURS'" json:"statut"`
+	DateDebut           time.Time          `gorm:"column:date_debut;not null" json:"date_debut"`
+	DateFin             *time.Time         `gorm:"column:date_fin" json:"date_fin"`
+	DureeMinutes        *int               `gorm:"column:duree_minutes" json:"duree_minutes"`
+	RapportIntervention string             `gorm:"column:rapport_intervention;type:text" json:"rapport_intervention"`
+	ActionsEffectuees   string             `gorm:"column:actions_effectuees;type:text" json:"actions_effectuees"`
+	CreatedAt           time.Time          `gorm:"column:created_at" json:"created_at"`
+	UpdatedAt           time.Time          `gorm:"column:updated_at" json:"updated_at"`
 }
 
 // TableName overrides the default table name.

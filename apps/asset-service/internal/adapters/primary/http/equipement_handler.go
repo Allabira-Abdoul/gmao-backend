@@ -26,7 +26,7 @@ func NewEquipementHandler(service *application.EquipementService) *EquipementHan
 func (h *EquipementHandler) ListEquipements(c *gin.Context) {
 	pagination := response.GetPagination(c, 1, 20)
 
-	equipements, total, err := h.service.ListEquipements(c.Request.Context(), pagination.Page, pagination.PerPage)
+	equipements, total, err := h.service.ListEquipements(c.Request.Context(), pagination.Limit, pagination.Offset)
 	if err != nil {
 		response.Error(c, http.StatusInternalServerError, "INTERNAL_ERROR", "Failed to list equipements")
 		return

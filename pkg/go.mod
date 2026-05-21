@@ -7,9 +7,14 @@ require (
 	github.com/golang-jwt/jwt/v5 v5.3.1
 	github.com/google/uuid v1.6.0
 	github.com/hashicorp/consul/api v1.34.2
+<<<<<<< HEAD:pkg/go.mod
 	github.com/rabbitmq/amqp091-go v1.11.0
 	golang.org/x/crypto v0.48.0
 	golang.org/x/sync v0.20.0
+=======
+	golang.org/x/crypto v0.48.0
+	golang.org/x/sync v0.19.0
+>>>>>>> 0240860163106025f1377fcc80aa118b977be644:go.mod
 	gorm.io/driver/postgres v1.6.0
 	gorm.io/gorm v1.31.1
 )

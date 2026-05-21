@@ -1,12 +1,14 @@
 package http
 
 import (
+	authdomain "backend-gmao/pkg/auth/domain"
 	"errors"
 	"net/http"
 
 	"backend-gmao/apps/user-service/internal/application/service"
 	"backend-gmao/apps/user-service/internal/core/domain"
 	"backend-gmao/pkg/response"
+
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 )
@@ -163,7 +165,7 @@ func (h *RoleHandler) SetRolePrivileges(c *gin.Context) {
 // ListPrivileges handles GET /privileges — returns all system-defined privileges
 func (h *RoleHandler) ListPrivileges(c *gin.Context) {
 	response.Success(c, http.StatusOK, gin.H{
-		"privileges":           domain.AllPrivileges(),
-		"privileges_by_domain": domain.PrivilegesByDomain(),
+		"privileges":           authdomain.AllPrivileges(),
+		"privileges_by_domain": authdomain.PrivilegesByDomain(),
 	})
 }

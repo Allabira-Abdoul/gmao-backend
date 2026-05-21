@@ -1,16 +1,10 @@
 package http
 
 import (
-<<<<<<< HEAD
 	"backend-gmao/apps/user-service/internal/application/service"
 	"backend-gmao/apps/user-service/internal/core/domain"
-=======
-	"backend-gmao/apps/user-service/internal/application"
->>>>>>> 0240860163106025f1377fcc80aa118b977be644
 	"backend-gmao/pkg/auth"
-	authdomain "backend-gmao/pkg/auth/domain"
 	"backend-gmao/pkg/middleware"
-
 	"github.com/gin-gonic/gin"
 )
 
@@ -49,22 +43,22 @@ func RegisterRoutes(
 		// User CRUD (privilege-protected)
 		users := authenticated.Group("/users")
 		{
-			users.GET("", middleware.RequirePrivilege(authdomain.PrivilegeUserView), userHandler.ListUsers)
-			users.GET("/:id", middleware.RequirePrivilege(authdomain.PrivilegeUserView), userHandler.GetUser)
-			users.POST("", middleware.RequirePrivilege(authdomain.PrivilegeUserCreate), userHandler.CreateUser)
-			users.PUT("/:id", middleware.RequirePrivilege(authdomain.PrivilegeUserUpdate), userHandler.UpdateUser)
-			users.DELETE("/:id", middleware.RequirePrivilege(authdomain.PrivilegeUserDelete), userHandler.DeleteUser)
+			users.GET("", middleware.RequirePrivilege(domain.PrivilegeUserView), userHandler.ListUsers)
+			users.GET("/:id", middleware.RequirePrivilege(domain.PrivilegeUserView), userHandler.GetUser)
+			users.POST("", middleware.RequirePrivilege(domain.PrivilegeUserCreate), userHandler.CreateUser)
+			users.PUT("/:id", middleware.RequirePrivilege(domain.PrivilegeUserUpdate), userHandler.UpdateUser)
+			users.DELETE("/:id", middleware.RequirePrivilege(domain.PrivilegeUserDelete), userHandler.DeleteUser)
 		}
 
 		// Role CRUD (privilege-protected)
 		roles := authenticated.Group("/roles")
 		{
-			roles.GET("", middleware.RequirePrivilege(authdomain.PrivilegeRoleView), roleHandler.ListRoles)
-			roles.GET("/:id", middleware.RequirePrivilege(authdomain.PrivilegeRoleView), roleHandler.GetRole)
-			roles.POST("", middleware.RequirePrivilege(authdomain.PrivilegeRoleCreate), roleHandler.CreateRole)
-			roles.PUT("/:id", middleware.RequirePrivilege(authdomain.PrivilegeRoleUpdate), roleHandler.UpdateRole)
-			roles.DELETE("/:id", middleware.RequirePrivilege(authdomain.PrivilegeRoleDelete), roleHandler.DeleteRole)
-			roles.PUT("/:id/privileges", middleware.RequirePrivilege(authdomain.PrivilegeRoleUpdate), roleHandler.SetRolePrivileges)
+			roles.GET("", middleware.RequirePrivilege(domain.PrivilegeRoleView), roleHandler.ListRoles)
+			roles.GET("/:id", middleware.RequirePrivilege(domain.PrivilegeRoleView), roleHandler.GetRole)
+			roles.POST("", middleware.RequirePrivilege(domain.PrivilegeRoleCreate), roleHandler.CreateRole)
+			roles.PUT("/:id", middleware.RequirePrivilege(domain.PrivilegeRoleUpdate), roleHandler.UpdateRole)
+			roles.DELETE("/:id", middleware.RequirePrivilege(domain.PrivilegeRoleDelete), roleHandler.DeleteRole)
+			roles.PUT("/:id/privileges", middleware.RequirePrivilege(domain.PrivilegeRoleUpdate), roleHandler.SetRolePrivileges)
 		}
 	}
 }

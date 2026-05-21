@@ -1,13 +1,11 @@
 package postgres
 
 import (
-	authdomain "backend-gmao/pkg/auth/domain"
 	"log"
 	"os"
 
 	"backend-gmao/apps/user-service/internal/core/domain"
 	"backend-gmao/pkg/auth"
-
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
@@ -28,31 +26,31 @@ func seedRoles(db *gorm.DB) {
 		{
 			Name:        "Administrator",
 			Description: "Full system access — all privileges granted",
-			Privileges:  authdomain.AllPrivileges(),
+			Privileges:  domain.AllPrivileges(),
 		},
 		{
 			Name:        "Manager",
 			Description: "Operational management — approval, analytics, and oversight",
 			Privileges: []string{
-				authdomain.PrivilegeUserView, authdomain.PrivilegeUserCreate, authdomain.PrivilegeUserUpdate,
-				authdomain.PrivilegeRoleView,
-				authdomain.PrivilegeAssetView, authdomain.PrivilegeAssetCreate, authdomain.PrivilegeAssetUpdate,
-				authdomain.PrivilegeWorkOrderView, authdomain.PrivilegeWorkOrderCreate, authdomain.PrivilegeWorkOrderUpdate,
-				authdomain.PrivilegeWorkOrderAssign, authdomain.PrivilegeWorkOrderApprove, authdomain.PrivilegeWorkOrderClose,
-				authdomain.PrivilegeMaintenanceView, authdomain.PrivilegeMaintenancePlanCreate,
-				authdomain.PrivilegeMaintenancePlanUpdate, authdomain.PrivilegeMaintenanceSchedule,
-				authdomain.PrivilegeInventoryView,
-				authdomain.PrivilegeAnalyticsView, authdomain.PrivilegeAnalyticsExport,
+				domain.PrivilegeUserView, domain.PrivilegeUserCreate, domain.PrivilegeUserUpdate,
+				domain.PrivilegeRoleView,
+				domain.PrivilegeAssetView, domain.PrivilegeAssetCreate, domain.PrivilegeAssetUpdate,
+				domain.PrivilegeWorkOrderView, domain.PrivilegeWorkOrderCreate, domain.PrivilegeWorkOrderUpdate,
+				domain.PrivilegeWorkOrderAssign, domain.PrivilegeWorkOrderApprove, domain.PrivilegeWorkOrderClose,
+				domain.PrivilegeMaintenanceView, domain.PrivilegeMaintenancePlanCreate,
+				domain.PrivilegeMaintenancePlanUpdate, domain.PrivilegeMaintenanceSchedule,
+				domain.PrivilegeInventoryView,
+				domain.PrivilegeAnalyticsView, domain.PrivilegeAnalyticsExport,
 			},
 		},
 		{
 			Name:        "Technician",
 			Description: "Field technician — maintenance and asset operations",
 			Privileges: []string{
-				authdomain.PrivilegeAssetView, authdomain.PrivilegeAssetUpdate,
-				authdomain.PrivilegeWorkOrderView, authdomain.PrivilegeWorkOrderUpdate, authdomain.PrivilegeWorkOrderClose,
-				authdomain.PrivilegeMaintenanceView,
-				authdomain.PrivilegeInventoryView, authdomain.PrivilegeInventoryUpdate,
+				domain.PrivilegeAssetView, domain.PrivilegeAssetUpdate,
+				domain.PrivilegeWorkOrderView, domain.PrivilegeWorkOrderUpdate, domain.PrivilegeWorkOrderClose,
+				domain.PrivilegeMaintenanceView,
+				domain.PrivilegeInventoryView, domain.PrivilegeInventoryUpdate,
 			},
 		},
 	}

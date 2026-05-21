@@ -34,7 +34,7 @@ func (r *UserRepository) FindByID(ctx context.Context, id uuid.UUID) (*domain.Us
 	result := r.db.WithContext(ctx).
 		Preload("Role").
 		Preload("Role.Privileges").
-		Where("id_utilisateur = ?", id).
+		Where("id = ?", id).
 		First(&user)
 
 	if result.Error != nil {
@@ -93,9 +93,18 @@ func (r *UserRepository) Update(ctx context.Context, user *domain.User) error {
 
 // Delete removes a user from the database by UUID.
 func (r *UserRepository) Delete(ctx context.Context, id uuid.UUID) error {
-	result := r.db.WithContext(ctx).Where("id_utilisateur = ?", id).Delete(&domain.User{})
+	result := r.db.WithContext(ctx).Where("id = ?", id).Delete(&domain.User{})
 	if result.Error != nil {
 		return fmt.Errorf("postgres delete user: %w", result.Error)
 	}
 	return nil
+}
+
+func (r *UserRepository) FindByTeamID(ctx context.Context, teamID uuid.UUID) ([]domain.User, error) {
+	var users []domain.User
+	result := r.db.WithContext(ctx).Where("team_id = ?", teamID).Find(&users)
+	if result.Error != nil {
+		return nil, fmt.Errorf("postgres find users by team id: %w", result.Error)
+	}
+	return users, nil
 }

@@ -4,7 +4,7 @@ import (
 	"errors"
 	"net/http"
 
-	"backend-gmao/apps/user-service/internal/application"
+	"backend-gmao/apps/user-service/internal/application/service"
 	"backend-gmao/apps/user-service/internal/core/domain"
 	"backend-gmao/pkg/middleware"
 	"backend-gmao/pkg/response"
@@ -15,11 +15,11 @@ import (
 
 // UserHandler handles HTTP requests for user operations.
 type UserHandler struct {
-	service *application.UserService
+	service *service.UserService
 }
 
 // NewUserHandler creates a new UserHandler.
-func NewUserHandler(service *application.UserService) *UserHandler {
+func NewUserHandler(service *service.UserService) *UserHandler {
 	return &UserHandler{service: service}
 }
 
@@ -48,7 +48,7 @@ func (h *UserHandler) GetUser(c *gin.Context) {
 
 	user, err := h.service.GetUserByID(c.Request.Context(), id)
 	if err != nil {
-		if errors.Is(err, application.ErrUserNotFound) {
+		if errors.Is(err, service.ErrUserNotFound) {
 			response.Error(c, http.StatusNotFound, "NOT_FOUND", "User not found")
 			return
 		}
@@ -87,11 +87,11 @@ func (h *UserHandler) CreateUser(c *gin.Context) {
 
 	user, err := h.service.CreateUser(c.Request.Context(), req)
 	if err != nil {
-		if errors.Is(err, application.ErrEmailExists) {
+		if errors.Is(err, service.ErrEmailExists) {
 			response.Error(c, http.StatusConflict, "EMAIL_EXISTS", err.Error())
 			return
 		}
-		if errors.Is(err, application.ErrRoleNotFound) {
+		if errors.Is(err, service.ErrRoleNotFound) {
 			response.Error(c, http.StatusBadRequest, "ROLE_NOT_FOUND", err.Error())
 			return
 		}
@@ -118,15 +118,15 @@ func (h *UserHandler) UpdateUser(c *gin.Context) {
 
 	user, err := h.service.UpdateUser(c.Request.Context(), id, req)
 	if err != nil {
-		if errors.Is(err, application.ErrUserNotFound) {
+		if errors.Is(err, service.ErrUserNotFound) {
 			response.Error(c, http.StatusNotFound, "NOT_FOUND", "User not found")
 			return
 		}
-		if errors.Is(err, application.ErrEmailExists) {
+		if errors.Is(err, service.ErrEmailExists) {
 			response.Error(c, http.StatusConflict, "EMAIL_EXISTS", err.Error())
 			return
 		}
-		if errors.Is(err, application.ErrRoleNotFound) {
+		if errors.Is(err, service.ErrRoleNotFound) {
 			response.Error(c, http.StatusBadRequest, "ROLE_NOT_FOUND", err.Error())
 			return
 		}
@@ -146,7 +146,7 @@ func (h *UserHandler) DeleteUser(c *gin.Context) {
 	}
 
 	if err := h.service.DeleteUser(c.Request.Context(), id); err != nil {
-		if errors.Is(err, application.ErrUserNotFound) {
+		if errors.Is(err, service.ErrUserNotFound) {
 			response.Error(c, http.StatusNotFound, "NOT_FOUND", "User not found")
 			return
 		}

@@ -1,7 +1,7 @@
 package http
 
 import (
-	"backend-gmao/apps/user-service/internal/application"
+	"backend-gmao/apps/user-service/internal/application/service"
 	"backend-gmao/apps/user-service/internal/core/domain"
 	"backend-gmao/pkg/auth"
 	"backend-gmao/pkg/middleware"
@@ -12,8 +12,8 @@ import (
 func RegisterRoutes(
 	router *gin.Engine,
 	jwtManager *auth.JWTManager,
-	userService *application.UserService,
-	roleService *application.RoleService,
+	userService *service.UserService,
+	roleService *service.RoleService,
 ) {
 	userHandler := NewUserHandler(userService)
 	roleHandler := NewRoleHandler(roleService)

@@ -11,7 +11,7 @@ import (
 
 	httphandler "backend-gmao/apps/user-service/internal/adapters/primary/http"
 	pgadapter "backend-gmao/apps/user-service/internal/adapters/secondary/postgres"
-	"backend-gmao/apps/user-service/internal/application"
+	"backend-gmao/apps/user-service/internal/application/service"
 	"backend-gmao/apps/user-service/internal/core/domain"
 	"backend-gmao/pkg/auth"
 	"backend-gmao/pkg/db"
@@ -65,7 +65,12 @@ func main() {
 		log.Fatalf("Failed to migrate RolePrivilege table: %v", err)
 	}
 
-	// 3. Migrate Users (Depends on Role)
+	// 3. Migrate Teams
+	if err := database.AutoMigrate(&domain.Team{}); err != nil {
+		log.Fatalf("Failed to migrate Team table: %v", err)
+	}
+
+	// 4. Migrate Users (Depends on Role and Equipe)
 	if err := database.AutoMigrate(&domain.User{}); err != nil {
 		log.Fatalf("Failed to migrate User table: %v", err)
 	}
@@ -96,10 +101,11 @@ func main() {
 	// --- Repositories (Secondary Adapters) ---
 	userRepo := pgadapter.NewUserRepository(database)
 	roleRepo := pgadapter.NewRoleRepository(database)
+	teamRepo := pgadapter.NewTeamRepository(database)
 
 	// --- Application Services ---
-	userService := application.NewUserService(userRepo, roleRepo)
-	roleService := application.NewRoleService(roleRepo, userRepo)
+	userService := service.NewUserService(userRepo, roleRepo, teamRepo)
+	roleService := service.NewRoleService(roleRepo, userRepo)
 
 	// --- Register with Consul ---
 	err = registry.Register(serviceID, serviceName, host, port)

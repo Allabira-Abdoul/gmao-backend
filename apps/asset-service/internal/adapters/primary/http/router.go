@@ -1,7 +1,7 @@
 package http
 
 import (
-	"backend-gmao/apps/asset-service/internal/application"
+	"backend-gmao/apps/asset-service/internal/application/service"
 	"backend-gmao/pkg/auth"
 	"backend-gmao/pkg/middleware"
 	"github.com/gin-gonic/gin"
@@ -11,22 +11,22 @@ import (
 func RegisterRoutes(
 	router *gin.Engine,
 	jwtManager *auth.JWTManager,
-	equipementService *application.EquipementService,
+	assetService *service.AssetService,
 ) {
-	equipementHandler := NewEquipementHandler(equipementService)
+	assetHandler := NewAssetHandler(assetService)
 
-	// --- Authenticated endpoints ---
+	// Authenticated routes
 	authenticated := router.Group("/")
 	authenticated.Use(middleware.RequireAuth(jwtManager))
 	{
-		// Equipement CRUD
-		equipements := authenticated.Group("/equipements")
+		assets := authenticated.Group("/assets")
 		{
-			equipements.GET("", equipementHandler.ListEquipements)
-			equipements.GET("/:id", equipementHandler.GetEquipement)
-			equipements.POST("", equipementHandler.CreateEquipement)
-			equipements.PUT("/:id", equipementHandler.UpdateEquipement)
-			equipements.DELETE("/:id", equipementHandler.DeleteEquipement)
+			assets.POST("", assetHandler.CreateAsset)
+			assets.GET("", assetHandler.ListAssets)
+			assets.GET("/:id", assetHandler.GetAsset)
+			assets.GET("/code/:code", assetHandler.GetAssetByCode)
+			assets.PUT("/:id", assetHandler.UpdateAsset)
+			assets.DELETE("/:id", assetHandler.DeleteAsset)
 		}
 	}
 }

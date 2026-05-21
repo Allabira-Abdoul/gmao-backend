@@ -11,7 +11,7 @@ import (
 
 	httphandler "backend-gmao/apps/maintenance-service/internal/adapters/primary/http"
 	pgadapter "backend-gmao/apps/maintenance-service/internal/adapters/secondary/postgres"
-	"backend-gmao/apps/maintenance-service/internal/application"
+	"backend-gmao/apps/maintenance-service/internal/application/service"
 	"backend-gmao/apps/maintenance-service/internal/core/domain"
 	"backend-gmao/pkg/auth"
 	"backend-gmao/pkg/db"
@@ -36,7 +36,7 @@ func main() {
 	serviceName := "maintenance-service"
 	host := getEnv("SERVICE_HOST", "127.0.0.1")
 
-	port := 8080
+	port := 8084
 	if envPort := os.Getenv("PORT"); envPort != "" {
 		fmt.Sscanf(envPort, "%d", &port)
 	}
@@ -54,16 +54,16 @@ func main() {
 
 	// --- Auto-Migrate Tables ---
 	log.Println("Running database migrations...")
-
 	if err := database.AutoMigrate(&domain.OrdreTravail{}); err != nil {
 		log.Fatalf("Failed to migrate OrdreTravail table: %v", err)
 	}
-
 	if err := database.AutoMigrate(&domain.Intervention{}); err != nil {
 		log.Fatalf("Failed to migrate Intervention table: %v", err)
 	}
-
 	log.Println("Database migrations completed")
+
+	// --- Seed Default Data ---
+	pgadapter.Seed(database)
 
 	// --- JWT Manager ---
 	jwtSecret := getEnv("JWT_SECRET", "gmao-dev-secret-change-in-production")
@@ -84,12 +84,10 @@ func main() {
 	jwtManager := auth.NewJWTManager(jwtSecret, accessExpiry, refreshExpiry)
 
 	// --- Repositories (Secondary Adapters) ---
-	otRepo := pgadapter.NewOrdreTravailRepository(database)
-	interventionRepo := pgadapter.NewInterventionRepository(database)
+	maintenanceRepo := pgadapter.NewMaintenanceRepository(database)
 
 	// --- Application Services ---
-	otService := application.NewOrdreTravailService(otRepo)
-	interventionService := application.NewInterventionService(interventionRepo)
+	maintenanceService := service.NewMaintenanceService(maintenanceRepo)
 
 	// --- Register with Consul ---
 	err = registry.Register(serviceID, serviceName, host, port)
@@ -101,10 +99,11 @@ func main() {
 	router := gin.Default()
 
 	// Health check
-	router.GET("/health", httphandler.HealthCheck)
+	healthHandler := httphandler.NewHealthHandler(database)
+	router.GET("/health", healthHandler.HealthCheck)
 
 	// Register all routes
-	httphandler.RegisterRoutes(router, jwtManager, otService, interventionService)
+	httphandler.RegisterRoutes(router, jwtManager, maintenanceService)
 
 	// --- Start Server ---
 	go func() {

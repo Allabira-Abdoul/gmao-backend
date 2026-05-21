@@ -7,8 +7,10 @@ package domain
 // --- User Management ---
 const (
 	PrivilegeUserView       = "USER_VIEW"
+	PrivilegeUserViewSelf   = "USER_VIEW_SELF"
 	PrivilegeUserCreate     = "USER_CREATE"
 	PrivilegeUserUpdate     = "USER_UPDATE"
+	PrivilegeUserUpdateSelf = "USER_UPDATE_SELF"
 	PrivilegeUserDelete     = "USER_DELETE"
 	PrivilegeUserAssignRole = "USER_ASSIGN_ROLE"
 )
@@ -28,6 +30,12 @@ const (
 	PrivilegeAssetUpdate   = "ASSET_UPDATE"
 	PrivilegeAssetDelete   = "ASSET_DELETE"
 	PrivilegeAssetTransfer = "ASSET_TRANSFER"
+	PrivilegeAssetHistory  = "ASSET_HISTORY"
+	PrivilegeAssetDocumentUpload   = "ASSET_DOCUMENT_UPLOAD"
+	PrivilegeAssetDocumentView   = "ASSET_DOCUMENT_VIEW"
+	PrivilegeAssetDocumentDelete   = "ASSET_DOCUMENT_DELETE"
+	PrivilegeAssetDocumentUpdate   = "ASSET_DOCUMENT_UPDATE"
+	PrivilegeAssetDocumentDownload   = "ASSET_DOCUMENT_DOWNLOAD"
 )
 
 // --- Work Order Management ---
@@ -63,6 +71,7 @@ const (
 const (
 	PrivilegeAnalyticsView   = "ANALYTICS_VIEW"
 	PrivilegeAnalyticsExport = "ANALYTICS_EXPORT"
+	PrivilegeAnalyticsImport = "ANALYTICS_IMPORT"
 )
 
 // --- System Administration ---
@@ -97,7 +106,12 @@ func AllPrivileges() []string {
 		// Analytics
 		PrivilegeAnalyticsView, PrivilegeAnalyticsExport,
 		// System
-		PrivilegeSystemAdmin, PrivilegeSystemConfig, PrivilegeSystemAuditView,
+		/// Can perform any action on the system
+		PrivilegeSystemAdmin, 
+		/// Can configure the system
+		PrivilegeSystemConfig, 
+		/// Can view the system audit logs
+		PrivilegeSystemAuditView,
 	}
 }
 

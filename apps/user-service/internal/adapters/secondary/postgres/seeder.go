@@ -19,17 +19,17 @@ func Seed(db *gorm.DB) {
 
 func seedRoles(db *gorm.DB) {
 	roles := []struct {
-		Libelle     string
+		Name        string
 		Description string
 		Privileges  []string
 	}{
 		{
-			Libelle:     "Administrateur",
+			Name:        "Administrator",
 			Description: "Full system access — all privileges granted",
 			Privileges:  domain.AllPrivileges(),
 		},
 		{
-			Libelle:     "Manager",
+			Name:        "Manager",
 			Description: "Operational management — approval, analytics, and oversight",
 			Privileges: []string{
 				domain.PrivilegeUserView, domain.PrivilegeUserCreate, domain.PrivilegeUserUpdate,
@@ -44,7 +44,7 @@ func seedRoles(db *gorm.DB) {
 			},
 		},
 		{
-			Libelle:     "Technicien",
+			Name:        "Technician",
 			Description: "Field technician — maintenance and asset operations",
 			Privileges: []string{
 				domain.PrivilegeAssetView, domain.PrivilegeAssetUpdate,
@@ -57,19 +57,19 @@ func seedRoles(db *gorm.DB) {
 
 	for _, r := range roles {
 		var existing domain.Role
-		result := db.Where("libelle = ?", r.Libelle).First(&existing)
+		result := db.Where("name = ?", r.Name).First(&existing)
 		if result.Error == nil {
-			log.Printf("Seeder: Role '%s' already exists, skipping", r.Libelle)
+			log.Printf("Seeder: Role '%s' already exists, skipping", r.Name)
 			continue
 		}
 
 		role := domain.Role{
-			Libelle:     r.Libelle,
+			Name:        r.Name,
 			Description: r.Description,
 		}
 
 		if err := db.Create(&role).Error; err != nil {
-			log.Printf("Seeder: Failed to create role '%s': %v", r.Libelle, err)
+			log.Printf("Seeder: Failed to create role '%s': %v", r.Name, err)
 			continue
 		}
 
@@ -77,17 +77,17 @@ func seedRoles(db *gorm.DB) {
 		rolePrivileges := make([]domain.RolePrivilege, 0, len(r.Privileges))
 		for _, p := range r.Privileges {
 			rolePrivileges = append(rolePrivileges, domain.RolePrivilege{
-				IDRole:    role.IDRole,
+				RoleID:    role.ID,
 				Privilege: p,
 			})
 		}
 
 		if err := db.Create(&rolePrivileges).Error; err != nil {
-			log.Printf("Seeder: Failed to set privileges for role '%s': %v", r.Libelle, err)
+			log.Printf("Seeder: Failed to set privileges for role '%s': %v", r.Name, err)
 			continue
 		}
 
-		log.Printf("Seeder: Created role '%s' with %d privileges", r.Libelle, len(r.Privileges))
+		log.Printf("Seeder: Created role '%s' with %d privileges", r.Name, len(r.Privileges))
 	}
 }
 
@@ -100,10 +100,10 @@ func seedAdminUser(db *gorm.DB) {
 		return
 	}
 
-	// Get the Administrateur role
+	// Get the Administrator role
 	var adminRole domain.Role
-	if err := db.Where("libelle = ?", "Administrateur").First(&adminRole).Error; err != nil {
-		log.Printf("Seeder: Cannot find Administrateur role, skipping admin user: %v", err)
+	if err := db.Where("name = ?", "Administrator").First(&adminRole).Error; err != nil {
+		log.Printf("Seeder: Cannot find Administrator role, skipping admin user: %v", err)
 		return
 	}
 
@@ -121,12 +121,12 @@ func seedAdminUser(db *gorm.DB) {
 	}
 
 	adminUser := domain.User{
-		IDUtilisateur: uuid.New(),
-		NomComplet:    "Administrateur Système",
-		Email:         "admin@gmao.local",
-		MotDePasse:    hashedPassword,
-		StatutCompte:  domain.StatusActive,
-		RoleID:        adminRole.IDRole,
+		ID:           uuid.New(),
+		FullName:     "System Administrator",
+		Email:        "admin@gmao.local",
+		Password:     hashedPassword,
+		Status:       domain.StatusActive,
+		RoleID:       adminRole.ID,
 	}
 
 	if err := db.Create(&adminUser).Error; err != nil {

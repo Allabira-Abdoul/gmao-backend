@@ -1,6 +1,0 @@
-## 2024-05-24 - API Response Abstraction
-**Learning:** Returning `interface{}` in standard `response.APIResponse.Data` causes consumers to decode twice if they want strongly typed structs. However, this is for HTTP communication. For handlers in an API, the main issue is that handlers themselves do parsing, service calling, error mapping, and response building.
-**Action:** The API Handlers currently mix request parsing, query parameter default assignments, domain error translation, and HTTP response generation. This violates SRP (Single Responsibility Principle) at the handler layer. A structural boost is to extract the pagination logic.
-## 2026-05-18 - Pagination Logic Extraction
-**Learning:** Handlers and services were duplicating pagination boundary checks (page < 1) and offset calculation, violating SRP. Returning interface{} originally caused issues, but here we found that computing offsets at the edges (in pkg/response) keeps business logic cleaner and fully decoupled from HTTP query string artifacts.
-**Action:** Always compute derived values like Limit and Offset at the network boundary (HTTP handler / Response utils) rather than duplicating the math inside every core business service method.

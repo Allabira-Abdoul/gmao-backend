@@ -11,7 +11,7 @@ import (
 
 	httphandler "backend-gmao/apps/asset-service/internal/adapters/primary/http"
 	pgadapter "backend-gmao/apps/asset-service/internal/adapters/secondary/postgres"
-	"backend-gmao/apps/asset-service/internal/application"
+	"backend-gmao/apps/asset-service/internal/application/service"
 	"backend-gmao/apps/asset-service/internal/core/domain"
 	"backend-gmao/pkg/auth"
 	"backend-gmao/pkg/db"
@@ -36,7 +36,7 @@ func main() {
 	serviceName := "asset-service"
 	host := getEnv("SERVICE_HOST", "127.0.0.1")
 
-	port := 8080
+	port := 8082
 	if envPort := os.Getenv("PORT"); envPort != "" {
 		fmt.Sscanf(envPort, "%d", &port)
 	}
@@ -54,12 +54,13 @@ func main() {
 
 	// --- Auto-Migrate Tables ---
 	log.Println("Running database migrations...")
-
-	if err := database.AutoMigrate(&domain.Equipement{}); err != nil {
-		log.Fatalf("Failed to migrate Equipement table: %v", err)
+	if err := database.AutoMigrate(&domain.Asset{}); err != nil {
+		log.Fatalf("Failed to migrate Asset table: %v", err)
 	}
-
 	log.Println("Database migrations completed")
+
+	// --- Seed Default Data ---
+	pgadapter.Seed(database)
 
 	// --- JWT Manager ---
 	jwtSecret := getEnv("JWT_SECRET", "gmao-dev-secret-change-in-production")
@@ -80,10 +81,10 @@ func main() {
 	jwtManager := auth.NewJWTManager(jwtSecret, accessExpiry, refreshExpiry)
 
 	// --- Repositories (Secondary Adapters) ---
-	equipementRepo := pgadapter.NewEquipementRepository(database)
+	assetRepo := pgadapter.NewAssetRepository(database)
 
 	// --- Application Services ---
-	equipementService := application.NewEquipementService(equipementRepo)
+	assetService := service.NewAssetService(assetRepo)
 
 	// --- Register with Consul ---
 	err = registry.Register(serviceID, serviceName, host, port)
@@ -95,10 +96,11 @@ func main() {
 	router := gin.Default()
 
 	// Health check
-	router.GET("/health", httphandler.HealthCheck)
+	healthHandler := httphandler.NewHealthHandler(database)
+	router.GET("/health", healthHandler.HealthCheck)
 
 	// Register all routes
-	httphandler.RegisterRoutes(router, jwtManager, equipementService)
+	httphandler.RegisterRoutes(router, jwtManager, assetService)
 
 	// --- Start Server ---
 	go func() {

@@ -99,6 +99,7 @@ func main() {
 		"maintenance":    true,
 		"prediction":     true,
 		"user":           true,
+		"audit":          true,
 	}
 
 	// Dynamic reverse proxy for all service routes

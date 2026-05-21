@@ -4,7 +4,7 @@ import (
 	"errors"
 	"net/http"
 
-	"backend-gmao/apps/user-service/internal/application"
+	"backend-gmao/apps/user-service/internal/application/service"
 	"backend-gmao/apps/user-service/internal/core/domain"
 	"backend-gmao/pkg/response"
 	"github.com/gin-gonic/gin"
@@ -13,11 +13,11 @@ import (
 
 // RoleHandler handles HTTP requests for role operations.
 type RoleHandler struct {
-	service *application.RoleService
+	service *service.RoleService
 }
 
 // NewRoleHandler creates a new RoleHandler.
-func NewRoleHandler(service *application.RoleService) *RoleHandler {
+func NewRoleHandler(service *service.RoleService) *RoleHandler {
 	return &RoleHandler{service: service}
 }
 
@@ -42,7 +42,7 @@ func (h *RoleHandler) GetRole(c *gin.Context) {
 
 	role, err := h.service.GetRoleByID(c.Request.Context(), id)
 	if err != nil {
-		if errors.Is(err, application.ErrRoleNotFoundByID) {
+		if errors.Is(err, service.ErrRoleNotFound) {
 			response.Error(c, http.StatusNotFound, "NOT_FOUND", "Role not found")
 			return
 		}
@@ -63,11 +63,11 @@ func (h *RoleHandler) CreateRole(c *gin.Context) {
 
 	role, err := h.service.CreateRole(c.Request.Context(), req)
 	if err != nil {
-		if errors.Is(err, application.ErrRoleLibelleExists) {
+		if errors.Is(err, service.ErrRoleNameExists) {
 			response.Error(c, http.StatusConflict, "ROLE_EXISTS", err.Error())
 			return
 		}
-		if errors.Is(err, application.ErrInvalidPrivileges) {
+		if errors.Is(err, service.ErrInvalidPrivileges) {
 			response.Error(c, http.StatusBadRequest, "INVALID_PRIVILEGES", err.Error())
 			return
 		}
@@ -94,11 +94,11 @@ func (h *RoleHandler) UpdateRole(c *gin.Context) {
 
 	role, err := h.service.UpdateRole(c.Request.Context(), id, req)
 	if err != nil {
-		if errors.Is(err, application.ErrRoleNotFoundByID) {
+		if errors.Is(err, service.ErrRoleNotFound) {
 			response.Error(c, http.StatusNotFound, "NOT_FOUND", "Role not found")
 			return
 		}
-		if errors.Is(err, application.ErrRoleLibelleExists) {
+		if errors.Is(err, service.ErrRoleNameExists) {
 			response.Error(c, http.StatusConflict, "ROLE_EXISTS", err.Error())
 			return
 		}
@@ -118,7 +118,7 @@ func (h *RoleHandler) DeleteRole(c *gin.Context) {
 	}
 
 	if err := h.service.DeleteRole(c.Request.Context(), id); err != nil {
-		if errors.Is(err, application.ErrRoleNotFoundByID) {
+		if errors.Is(err, service.ErrRoleNotFound) {
 			response.Error(c, http.StatusNotFound, "NOT_FOUND", "Role not found")
 			return
 		}
@@ -145,11 +145,11 @@ func (h *RoleHandler) SetRolePrivileges(c *gin.Context) {
 
 	role, err := h.service.SetRolePrivileges(c.Request.Context(), id, req)
 	if err != nil {
-		if errors.Is(err, application.ErrRoleNotFoundByID) {
+		if errors.Is(err, service.ErrRoleNotFound) {
 			response.Error(c, http.StatusNotFound, "NOT_FOUND", "Role not found")
 			return
 		}
-		if errors.Is(err, application.ErrInvalidPrivileges) {
+		if errors.Is(err, service.ErrInvalidPrivileges) {
 			response.Error(c, http.StatusBadRequest, "INVALID_PRIVILEGES", err.Error())
 			return
 		}

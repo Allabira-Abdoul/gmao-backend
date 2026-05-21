@@ -33,7 +33,7 @@ func (r *RoleRepository) FindByID(ctx context.Context, id uuid.UUID) (*domain.Ro
 	var role domain.Role
 	result := r.db.WithContext(ctx).
 		Preload("Privileges").
-		Where("id_role = ?", id).
+		Where("id = ?", id).
 		First(&role)
 
 	if result.Error != nil {
@@ -42,16 +42,16 @@ func (r *RoleRepository) FindByID(ctx context.Context, id uuid.UUID) (*domain.Ro
 	return &role, nil
 }
 
-// FindByLibelle retrieves a role by its label, preloading its privileges.
-func (r *RoleRepository) FindByLibelle(ctx context.Context, libelle string) (*domain.Role, error) {
+// FindByName retrieves a role by its name, preloading its privileges.
+func (r *RoleRepository) FindByName(ctx context.Context, name string) (*domain.Role, error) {
 	var role domain.Role
 	result := r.db.WithContext(ctx).
 		Preload("Privileges").
-		Where("libelle = ?", libelle).
+		Where("name = ?", name).
 		First(&role)
 
 	if result.Error != nil {
-		return nil, fmt.Errorf("postgres find role by libelle: %w", result.Error)
+		return nil, fmt.Errorf("postgres find role by name: %w", result.Error)
 	}
 	return &role, nil
 }
@@ -61,7 +61,7 @@ func (r *RoleRepository) FindAll(ctx context.Context) ([]domain.Role, error) {
 	var roles []domain.Role
 	result := r.db.WithContext(ctx).
 		Preload("Privileges").
-		Order("libelle ASC").
+		Order("name ASC").
 		Find(&roles)
 
 	if result.Error != nil {
@@ -83,11 +83,11 @@ func (r *RoleRepository) Update(ctx context.Context, role *domain.Role) error {
 func (r *RoleRepository) Delete(ctx context.Context, id uuid.UUID) error {
 	return r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
 		// Delete associated privileges first
-		if err := tx.Where("id_role = ?", id).Delete(&domain.RolePrivilege{}).Error; err != nil {
+		if err := tx.Where("role_id = ?", id).Delete(&domain.RolePrivilege{}).Error; err != nil {
 			return fmt.Errorf("postgres delete role privileges: %w", err)
 		}
 		// Delete the role
-		if err := tx.Where("id_role = ?", id).Delete(&domain.Role{}).Error; err != nil {
+		if err := tx.Where("id = ?", id).Delete(&domain.Role{}).Error; err != nil {
 			return fmt.Errorf("postgres delete role: %w", err)
 		}
 		return nil
@@ -98,7 +98,7 @@ func (r *RoleRepository) Delete(ctx context.Context, id uuid.UUID) error {
 func (r *RoleRepository) SetPrivileges(ctx context.Context, roleID uuid.UUID, privileges []string) error {
 	return r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
 		// Delete existing privileges
-		if err := tx.Where("id_role = ?", roleID).Delete(&domain.RolePrivilege{}).Error; err != nil {
+		if err := tx.Where("role_id = ?", roleID).Delete(&domain.RolePrivilege{}).Error; err != nil {
 			return fmt.Errorf("postgres clear role privileges: %w", err)
 		}
 
@@ -106,7 +106,7 @@ func (r *RoleRepository) SetPrivileges(ctx context.Context, roleID uuid.UUID, pr
 		rolePrivileges := make([]domain.RolePrivilege, 0, len(privileges))
 		for _, p := range privileges {
 			rolePrivileges = append(rolePrivileges, domain.RolePrivilege{
-				IDRole:    roleID,
+				RoleID:    roleID,
 				Privilege: p,
 			})
 		}

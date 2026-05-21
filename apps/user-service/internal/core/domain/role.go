@@ -6,12 +6,12 @@ import (
 	"github.com/google/uuid"
 )
 
-// Role represents a role in the GMAO system (e.g., Administrateur, Technicien, Manager).
+// Role represents a role in the GMAO system (e.g., Administrator, Technician, Manager).
 type Role struct {
-	IDRole      uuid.UUID       `gorm:"column:id_role;type:uuid;primaryKey;default:gen_random_uuid()" json:"id_role"`
-	Libelle     string          `gorm:"column:libelle;uniqueIndex;not null" json:"libelle"`
+	ID          uuid.UUID       `gorm:"column:id;type:uuid;primaryKey;default:gen_random_uuid()" json:"id"`
+	Name        string          `gorm:"column:name;uniqueIndex;not null" json:"name"`
 	Description string          `gorm:"column:description" json:"description"`
-	Privileges  []RolePrivilege `gorm:"foreignKey:IDRole;references:IDRole" json:"privileges,omitempty"`
+	Privileges  []RolePrivilege `gorm:"foreignKey:RoleID;references:ID" json:"privileges,omitempty"`
 	CreatedAt   time.Time       `gorm:"column:created_at" json:"created_at"`
 	UpdatedAt   time.Time       `gorm:"column:updated_at" json:"updated_at"`
 }
@@ -23,7 +23,7 @@ func (Role) TableName() string {
 
 // RolePrivilege represents the many-to-many relationship between roles and privileges.
 type RolePrivilege struct {
-	IDRole    uuid.UUID `gorm:"column:id_role;type:uuid;primaryKey" json:"id_role"`
+	RoleID    uuid.UUID `gorm:"column:role_id;type:uuid;primaryKey" json:"role_id"`
 	Privilege string    `gorm:"column:privilege;primaryKey" json:"privilege"`
 }
 
@@ -34,8 +34,8 @@ func (RolePrivilege) TableName() string {
 
 // RoleResponse is the DTO returned by API endpoints.
 type RoleResponse struct {
-	IDRole      uuid.UUID `json:"id_role"`
-	Libelle     string    `json:"libelle"`
+	ID          uuid.UUID `json:"id"`
+	Name        string    `json:"name"`
 	Description string    `json:"description"`
 	Privileges  []string  `json:"privileges"`
 	CreatedAt   time.Time `json:"created_at"`
@@ -50,8 +50,8 @@ func (r *Role) ToResponse() RoleResponse {
 	}
 
 	return RoleResponse{
-		IDRole:      r.IDRole,
-		Libelle:     r.Libelle,
+		ID:          r.ID,
+		Name:        r.Name,
 		Description: r.Description,
 		Privileges:  privileges,
 		CreatedAt:   r.CreatedAt,
@@ -70,15 +70,16 @@ func (r *Role) GetPrivilegeStrings() []string {
 
 // CreateRoleRequest is the DTO for creating a new role.
 type CreateRoleRequest struct {
-	Libelle     string   `json:"libelle" binding:"required,min=2,max=100"`
+	Name        string   `json:"name" binding:"required,min=2,max=100"`
 	Description string   `json:"description" binding:"max=500"`
 	Privileges  []string `json:"privileges" binding:"required,min=1"`
 }
 
 // UpdateRoleRequest is the DTO for updating an existing role.
 type UpdateRoleRequest struct {
-	Libelle     *string `json:"libelle,omitempty" binding:"omitempty,min=2,max=100"`
+	Name        *string `json:"name,omitempty" binding:"omitempty,min=2,max=100"`
 	Description *string `json:"description,omitempty" binding:"omitempty,max=500"`
+	Privileges  *[]string `json:"privileges,omitempty" binding:"omitempty,min=1"`
 }
 
 // SetPrivilegesRequest is the DTO for setting a role's privileges.

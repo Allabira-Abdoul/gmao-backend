@@ -1,7 +1,7 @@
 package http
 
 import (
-	"backend-gmao/apps/maintenance-service/internal/application"
+	"backend-gmao/apps/maintenance-service/internal/application/service"
 	"backend-gmao/pkg/auth"
 	"backend-gmao/pkg/middleware"
 	"github.com/gin-gonic/gin"
@@ -11,34 +11,25 @@ import (
 func RegisterRoutes(
 	router *gin.Engine,
 	jwtManager *auth.JWTManager,
-	ordreTravailService *application.OrdreTravailService,
-	interventionService *application.InterventionService,
+	maintenanceService *service.MaintenanceService,
 ) {
-	otHandler := NewOrdreTravailHandler(ordreTravailService)
-	interventionHandler := NewInterventionHandler(interventionService)
+	maintenanceHandler := NewMaintenanceHandler(maintenanceService)
 
-	// --- Authenticated endpoints ---
+	// Authenticated routes
 	authenticated := router.Group("/")
 	authenticated.Use(middleware.RequireAuth(jwtManager))
 	{
-		// Work Order CRUD
-		ordres := authenticated.Group("/ordres-travail")
+		workorders := authenticated.Group("/work-orders")
 		{
-			ordres.GET("", otHandler.ListOrdresTravail)
-			ordres.GET("/:id", otHandler.GetOrdreTravail)
-			ordres.POST("", otHandler.CreateOrdreTravail)
-			ordres.PUT("/:id", otHandler.UpdateOrdreTravail)
-			ordres.DELETE("/:id", otHandler.DeleteOrdreTravail)
-		}
+			workorders.POST("", maintenanceHandler.CreateWorkOrder)
+			workorders.GET("", maintenanceHandler.ListWorkOrders)
+			workorders.GET("/:id", maintenanceHandler.GetWorkOrder)
+			workorders.PUT("/:id", maintenanceHandler.UpdateWorkOrder)
+			workorders.DELETE("/:id", maintenanceHandler.DeleteWorkOrder)
 
-		// Intervention CRUD
-		interventions := authenticated.Group("/interventions")
-		{
-			interventions.GET("", interventionHandler.ListInterventions)
-			interventions.GET("/:id", interventionHandler.GetIntervention)
-			interventions.POST("", interventionHandler.CreateIntervention)
-			interventions.PUT("/:id", interventionHandler.UpdateIntervention)
-			interventions.DELETE("/:id", interventionHandler.DeleteIntervention)
+			// Interventions under work order
+			workorders.POST("/:id/interventions", maintenanceHandler.CreateIntervention)
+			workorders.GET("/:id/interventions", maintenanceHandler.GetInterventions)
 		}
 	}
 }

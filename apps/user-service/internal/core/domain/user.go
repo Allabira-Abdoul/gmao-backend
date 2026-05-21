@@ -15,61 +15,57 @@ const (
 	StatusLocked   AccountStatus = "LOCKED"
 )
 
-// User represents the Utilisateur entity in the GMAO system.
+// User represents the User entity in the GMAO system.
 type User struct {
-	IDUtilisateur uuid.UUID     `gorm:"column:id_utilisateur;type:uuid;primaryKey;default:gen_random_uuid()" json:"id_utilisateur"`
-	NomComplet    string        `gorm:"column:nom_complet;not null" json:"nom_complet"`
+	ID            uuid.UUID     `gorm:"column:id;type:uuid;primaryKey;default:gen_random_uuid()" json:"id"`
+	FullName      string        `gorm:"column:full_name;not null" json:"full_name"`
 	Email         string        `gorm:"column:email;uniqueIndex;not null" json:"email"`
-	MotDePasse    string        `gorm:"column:mot_de_passe;not null" json:"-"`
-	StatutCompte  AccountStatus `gorm:"column:statut_compte;type:varchar(20);default:'ACTIVE'" json:"statut_compte"`
-	RoleID        uuid.UUID     `gorm:"column:id_role;type:uuid;not null" json:"id_role"`
-	Role          Role          `gorm:"foreignKey:RoleID;references:IDRole;constraint:OnUpdate:CASCADE,OnDelete:RESTRICT;" json:"role,omitempty"`
-	IDEquipe      *uuid.UUID    `gorm:"column:id_equipe;type:uuid" json:"id_equipe"`
-	Equipe        *Equipe       `gorm:"foreignKey:IDEquipe;references:IDEquipe;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;" json:"equipe,omitempty"`
+	Password      string        `gorm:"column:password;not null" json:"-"`
+	Status        AccountStatus `gorm:"column:status;type:varchar(20);default:'ACTIVE'" json:"status"`
+	RoleID        uuid.UUID     `gorm:"column:role_id;type:uuid;not null" json:"role_id"`
+	Role          Role          `gorm:"foreignKey:RoleID;references:ID;constraint:OnUpdate:CASCADE,OnDelete:RESTRICT;" json:"role,omitempty"`
+	TeamID        *uuid.UUID    `gorm:"column:team_id;type:uuid" json:"team_id"`
+	Team          *Team         `gorm:"foreignKey:TeamID;references:ID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;" json:"team,omitempty"`
 	CreatedAt     time.Time     `gorm:"column:created_at" json:"created_at"`
 	UpdatedAt     time.Time     `gorm:"column:updated_at" json:"updated_at"`
 }
 
 // TableName overrides the default table name.
 func (User) TableName() string {
-	return "utilisateurs"
+	return "users"
 }
 
 // UserResponse is the DTO returned by API endpoints (excludes password).
 type UserResponse struct {
-	IDUtilisateur uuid.UUID     `json:"id_utilisateur"`
-	NomComplet    string        `json:"nom_complet"`
+	ID            uuid.UUID     `json:"id"`
+	FullName      string        `json:"full_name"`
 	Email         string        `json:"email"`
-	StatutCompte  AccountStatus   `json:"statut_compte"`
-	IDRole        uuid.UUID       `json:"id_role"`
-	Role          *RoleResponse   `json:"role,omitempty"`
-	IDEquipe      *uuid.UUID      `json:"id_equipe,omitempty"`
-	Equipe        *EquipeResponse `json:"equipe,omitempty"`
-	CreatedAt     time.Time       `json:"created_at"`
-	UpdatedAt     time.Time       `json:"updated_at"`
+	Status        AccountStatus `json:"status"`
+	Role          *RoleResponse `json:"role,omitempty"`
+	Team          *TeamResponse `json:"team,omitempty"`
+	CreatedAt     time.Time     `json:"created_at"`
+	UpdatedAt     time.Time     `json:"updated_at"`
 }
 
 // ToResponse converts a User to a UserResponse (safe for API output).
 func (u *User) ToResponse() UserResponse {
 	resp := UserResponse{
-		IDUtilisateur: u.IDUtilisateur,
-		NomComplet:    u.NomComplet,
+		ID:            u.ID,
+		FullName:      u.FullName,
 		Email:         u.Email,
-		StatutCompte:  u.StatutCompte,
-		IDRole:        u.RoleID,
+		Status:        u.Status,
 		CreatedAt:     u.CreatedAt,
 		UpdatedAt:     u.UpdatedAt,
 	}
 
-	if u.Role.IDRole != uuid.Nil {
+	if u.Role.ID != uuid.Nil {
 		roleResp := u.Role.ToResponse()
 		resp.Role = &roleResp
 	}
 
-	resp.IDEquipe = u.IDEquipe
-	if u.Equipe != nil && u.Equipe.IDEquipe != uuid.Nil {
-		equipeResp := u.Equipe.ToResponse()
-		resp.Equipe = &equipeResp
+	if u.Team != nil && u.Team.ID != uuid.Nil {
+		teamResp := u.Team.ToResponse()
+		resp.Team = &teamResp
 	}
 
 	return resp
@@ -78,12 +74,12 @@ func (u *User) ToResponse() UserResponse {
 // InternalUserResponse is the DTO used for inter-service communication.
 // It includes the hashed password for authentication verification.
 type InternalUserResponse struct {
-	IDUtilisateur uuid.UUID     `json:"id_utilisateur"`
-	NomComplet    string        `json:"nom_complet"`
+	ID            uuid.UUID     `json:"id"`
+	FullName      string        `json:"full_name"`
 	Email         string        `json:"email"`
-	MotDePasse    string        `json:"mot_de_passe"`
-	StatutCompte  AccountStatus `json:"statut_compte"`
-	RoleLibelle   string        `json:"role_libelle"`
+	Password      string        `json:"password"`
+	Status        AccountStatus `json:"status"`
+	RoleName      string        `json:"role_name"`
 	Privileges    []string      `json:"privileges"`
 }
 
@@ -95,29 +91,29 @@ func (u *User) ToInternalResponse() InternalUserResponse {
 	}
 
 	return InternalUserResponse{
-		IDUtilisateur: u.IDUtilisateur,
-		NomComplet:    u.NomComplet,
+		ID:            u.ID,
+		FullName:      u.FullName,
 		Email:         u.Email,
-		MotDePasse:    u.MotDePasse,
-		StatutCompte:  u.StatutCompte,
-		RoleLibelle:   u.Role.Libelle,
+		Password:      u.Password,
+		Status:        u.Status,
+		RoleName:      u.Role.Name,
 		Privileges:    privileges,
 	}
 }
 
 // CreateUserRequest is the DTO for creating a new user.
 type CreateUserRequest struct {
-	NomComplet string `json:"nom_complet" binding:"required,min=2,max=255"`
-	Email      string `json:"email" binding:"required,email"`
-	MotDePasse string `json:"mot_de_passe" binding:"required,min=8"`
-	IDRole     string `json:"id_role" binding:"required,uuid"`
+	FullName string `json:"full_name" binding:"required,min=2,max=255"`
+	Email    string `json:"email" binding:"required,email"`
+	Password string `json:"password" binding:"required,min=8"`
+	RoleID   string `json:"role_id" binding:"required,uuid"`
 }
 
 // UpdateUserRequest is the DTO for updating an existing user.
 type UpdateUserRequest struct {
-	NomComplet   *string `json:"nom_complet,omitempty" binding:"omitempty,min=2,max=255"`
-	Email        *string `json:"email,omitempty" binding:"omitempty,email"`
-	StatutCompte *string `json:"statut_compte,omitempty" binding:"omitempty,oneof=ACTIVE INACTIVE LOCKED"`
-	IDRole       *string `json:"id_role,omitempty" binding:"omitempty,uuid"`
-	IDEquipe     *string `json:"id_equipe,omitempty" binding:"omitempty,uuid"`
+	FullName *string `json:"full_name,omitempty" binding:"omitempty,min=2,max=255"`
+	Email    *string `json:"email,omitempty" binding:"omitempty,email"`
+	Status   *string `json:"status,omitempty" binding:"omitempty,oneof=ACTIVE INACTIVE LOCKED"`
+	RoleID   *string `json:"role_id,omitempty" binding:"omitempty,uuid"`
+	TeamID   *string `json:"team_id,omitempty" binding:"omitempty,uuid"`
 }

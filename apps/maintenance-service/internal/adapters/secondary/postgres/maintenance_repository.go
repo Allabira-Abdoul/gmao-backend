@@ -39,7 +39,9 @@ func (r *maintenanceRepository) FindWorkOrderByID(ctx context.Context, id uuid.U
 
 func (r *maintenanceRepository) FindAllWorkOrders(ctx context.Context) ([]domain.OrdreTravail, error) {
 	var wos []domain.OrdreTravail
-	if err := r.db.WithContext(ctx).Find(&wos).Error; err != nil {
+	// ⚡ Bolt Optimization: Use Preload to eagerly fetch interventions and their measurements
+	// in a single query to eliminate N+1 queries when fetching all work orders.
+	if err := r.db.WithContext(ctx).Preload("Interventions").Preload("Interventions.Measurements").Find(&wos).Error; err != nil {
 		return nil, err
 	}
 	return wos, nil

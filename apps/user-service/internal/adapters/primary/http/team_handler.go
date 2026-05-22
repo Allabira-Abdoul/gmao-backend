@@ -4,8 +4,8 @@ import (
 	"errors"
 	"net/http"
 
-	"backend-gmao/apps/user-service/internal/core/domain"
 	"backend-gmao/apps/user-service/internal/application/service"
+	"backend-gmao/apps/user-service/internal/core/domain"
 	"backend-gmao/pkg/response"
 
 	"github.com/gin-gonic/gin"

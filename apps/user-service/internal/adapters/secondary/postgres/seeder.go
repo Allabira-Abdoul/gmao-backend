@@ -154,12 +154,12 @@ func seedAdminUser(db *gorm.DB) {
 	}
 
 	adminUser := domain.User{
-		ID:           uuid.New(),
-		FullName:     "System Administrator",
-		Email:        "admin@gmao.local",
-		Password:     hashedPassword,
-		Status:       domain.StatusActive,
-		RoleID:       adminRole.ID,
+		ID:       uuid.New(),
+		FullName: "System Administrator",
+		Email:    "admin@gmao.local",
+		Password: hashedPassword,
+		Status:   domain.StatusActive,
+		RoleID:   adminRole.ID,
 	}
 
 	if err := db.Create(&adminUser).Error; err != nil {

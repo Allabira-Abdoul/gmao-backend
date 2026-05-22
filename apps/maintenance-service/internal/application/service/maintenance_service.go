@@ -151,11 +151,11 @@ func (s *MaintenanceService) DeleteWorkOrder(ctx context.Context, id uuid.UUID) 
 	if err != nil {
 		return ErrWorkOrderNotFound
 	}
-	
+
 	if err := s.maintenanceRepo.DeleteWorkOrder(ctx, id); err != nil {
 		return err
 	}
-	
+
 	s.fireAudit(ctx, "DELETE_WORK_ORDER", fmt.Sprintf("Deleted work order %s", id))
 	return nil
 }
@@ -181,8 +181,6 @@ func (s *MaintenanceService) GetAllWorkOrders(ctx context.Context) ([]domain.Ord
 
 	responses := make([]domain.OrdreTravailResponse, len(workorders))
 	for i, wo := range workorders {
-		interventions, _ := s.maintenanceRepo.FindInterventionsByWorkOrderID(ctx, wo.ID)
-		wo.Interventions = interventions
 		responses[i] = wo.ToResponse()
 	}
 	return responses, nil
@@ -243,7 +241,7 @@ func (s *MaintenanceService) RecordIntervention(ctx context.Context, workOrderID
 		MaintenanceCategory: intervention.MaintenanceCategory,
 		DurationMinutes:     float64(intervention.DurationMinutes),
 	}
-	
+
 	// We run this asynchronously so it doesn't block the API response
 	go func() {
 		// Create a background context since the request context might be cancelled

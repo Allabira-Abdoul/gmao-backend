@@ -8,13 +8,13 @@ import (
 
 // Asset represents a physical asset in the GMAO system.
 type Asset struct {
-	ID            uuid.UUID `gorm:"column:id;type:uuid;primaryKey;default:gen_random_uuid()" json:"id"`
-	Name          string    `gorm:"column:name;not null" json:"name"`
-	Code          string    `gorm:"column:code;uniqueIndex;not null" json:"code"`
-	Status        string    `gorm:"column:status;not null;default:'OPERATIONAL'" json:"status"` // OPERATIONAL, DOWN, UNDER_REPAIR, SCRAPPED
-	Category      string    `gorm:"column:category;not null" json:"category"`
-	Location      string    `gorm:"column:location;not null" json:"location"`
-	PurchaseDate  time.Time `gorm:"column:purchase_date" json:"purchase_date"`
+	ID            uuid.UUID         `gorm:"column:id;type:uuid;primaryKey;default:gen_random_uuid()" json:"id"`
+	Name          string            `gorm:"column:name;not null" json:"name"`
+	Code          string            `gorm:"column:code;uniqueIndex;not null" json:"code"`
+	Status        string            `gorm:"column:status;not null;default:'OPERATIONAL'" json:"status"` // OPERATIONAL, DOWN, UNDER_REPAIR, SCRAPPED
+	Category      string            `gorm:"column:category;not null" json:"category"`
+	Location      string            `gorm:"column:location;not null" json:"location"`
+	PurchaseDate  time.Time         `gorm:"column:purchase_date" json:"purchase_date"`
 	PurchaseValue float64           `gorm:"column:purchase_value" json:"purchase_value"`
 	Components    []AssetComponent  `gorm:"foreignKey:AssetID" json:"components,omitempty"`
 	Thresholds    []MetricThreshold `gorm:"foreignKey:AssetID" json:"thresholds,omitempty"`
@@ -29,12 +29,12 @@ func (Asset) TableName() string {
 
 // AssetResponse represents the API DTO for Asset.
 type AssetResponse struct {
-	ID            uuid.UUID `json:"id"`
-	Name          string    `json:"name"`
-	Code          string    `json:"code"`
-	Status        string    `json:"status"`
-	Category      string    `json:"category"`
-	Location      string    `json:"location"`
+	ID            uuid.UUID                 `json:"id"`
+	Name          string                    `json:"name"`
+	Code          string                    `json:"code"`
+	Status        string                    `json:"status"`
+	Category      string                    `json:"category"`
+	Location      string                    `json:"location"`
 	PurchaseDate  time.Time                 `json:"purchase_date"`
 	PurchaseValue float64                   `json:"purchase_value"`
 	Components    []AssetComponentResponse  `json:"components,omitempty"`

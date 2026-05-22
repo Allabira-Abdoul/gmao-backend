@@ -42,5 +42,24 @@ func (s *Session) ToResponse() SessionResponse {
 
 // CreateSessionRequest is the DTO used to submit a new session.
 type CreateSessionRequest struct {
-	UserID uuid.UUID `json:"user_id" binding:"required"`
+	Email    string `json:"email" binding:"required"`
+	Password string `json:"password" binding:"required"`
+}
+
+type AccountStatus string
+
+const (
+	StatusActive   AccountStatus = "ACTIVE"
+	StatusInactive AccountStatus = "INACTIVE"
+	StatusLocked   AccountStatus = "LOCKED"
+)
+
+type User struct {
+	ID            uuid.UUID     `json:"id"`
+	FullName      string        `json:"full_name"`
+	Email         string        `json:"email"`
+	Password      string        `json:"password"`
+	Status        AccountStatus `json:"status"`
+	RoleName      string        `json:"role_name"`
+	Privileges    []string      `json:"privileges"`
 }

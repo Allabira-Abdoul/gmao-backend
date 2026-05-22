@@ -16,13 +16,13 @@ func RegisterRoutes(
 	authHandler := NewAuthHandler(authService)
 
 	// Public routes
+	router.POST("/sessions", authHandler.CreateSession)
 	router.POST("/sessions/validate", authHandler.ValidateSession)
 
 	// Authenticated routes
 	authenticated := router.Group("/")
 	authenticated.Use(middleware.RequireAuth(jwtManager))
 	{
-		authenticated.POST("/sessions", authHandler.CreateSession)
 		authenticated.DELETE("/sessions", authHandler.RevokeSession)
 	}
 }

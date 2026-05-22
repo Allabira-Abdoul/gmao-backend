@@ -15,9 +15,11 @@ type Asset struct {
 	Category      string    `gorm:"column:category;not null" json:"category"`
 	Location      string    `gorm:"column:location;not null" json:"location"`
 	PurchaseDate  time.Time `gorm:"column:purchase_date" json:"purchase_date"`
-	PurchaseValue float64   `gorm:"column:purchase_value" json:"purchase_value"`
-	CreatedAt     time.Time `gorm:"column:created_at" json:"created_at"`
-	UpdatedAt     time.Time `gorm:"column:updated_at" json:"updated_at"`
+	PurchaseValue float64           `gorm:"column:purchase_value" json:"purchase_value"`
+	Components    []AssetComponent  `gorm:"foreignKey:AssetID" json:"components,omitempty"`
+	Thresholds    []MetricThreshold `gorm:"foreignKey:AssetID" json:"thresholds,omitempty"`
+	CreatedAt     time.Time         `gorm:"column:created_at" json:"created_at"`
+	UpdatedAt     time.Time         `gorm:"column:updated_at" json:"updated_at"`
 }
 
 // TableName overrides GORM's default table name.
@@ -33,14 +35,26 @@ type AssetResponse struct {
 	Status        string    `json:"status"`
 	Category      string    `json:"category"`
 	Location      string    `json:"location"`
-	PurchaseDate  time.Time `json:"purchase_date"`
-	PurchaseValue float64   `json:"purchase_value"`
-	CreatedAt     time.Time `json:"created_at"`
-	UpdatedAt     time.Time `json:"updated_at"`
+	PurchaseDate  time.Time                 `json:"purchase_date"`
+	PurchaseValue float64                   `json:"purchase_value"`
+	Components    []AssetComponentResponse  `json:"components,omitempty"`
+	Thresholds    []MetricThresholdResponse `json:"thresholds,omitempty"`
+	CreatedAt     time.Time                 `json:"created_at"`
+	UpdatedAt     time.Time                 `json:"updated_at"`
 }
 
 // ToResponse converts an Asset to AssetResponse DTO.
 func (a *Asset) ToResponse() AssetResponse {
+	comps := make([]AssetComponentResponse, len(a.Components))
+	for i, c := range a.Components {
+		comps[i] = c.ToResponse()
+	}
+
+	thresh := make([]MetricThresholdResponse, len(a.Thresholds))
+	for i, t := range a.Thresholds {
+		thresh[i] = t.ToResponse()
+	}
+
 	return AssetResponse{
 		ID:            a.ID,
 		Name:          a.Name,
@@ -50,6 +64,8 @@ func (a *Asset) ToResponse() AssetResponse {
 		Location:      a.Location,
 		PurchaseDate:  a.PurchaseDate,
 		PurchaseValue: a.PurchaseValue,
+		Components:    comps,
+		Thresholds:    thresh,
 		CreatedAt:     a.CreatedAt,
 		UpdatedAt:     a.UpdatedAt,
 	}

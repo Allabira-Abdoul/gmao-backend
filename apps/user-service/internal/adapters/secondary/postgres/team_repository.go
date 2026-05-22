@@ -45,12 +45,16 @@ func (r *TeamRepository) FindByUserID(ctx context.Context, userID uuid.UUID) ([]
 	return teams, nil
 }
 
-func (r *TeamRepository) FindAll(ctx context.Context) ([]domain.Team, error) {
+func (r *TeamRepository) FindAll(ctx context.Context, limit, offset int) ([]domain.Team, int64, error) {
 	var teams []domain.Team
-	if err := r.db.WithContext(ctx).Find(&teams).Error; err != nil {
-		return nil, err
+	var total int64
+	if err := r.db.WithContext(ctx).Limit(limit).Offset(offset).Find(&teams).Error; err != nil {
+		return nil, 0, err
 	}
-	return teams, nil
+	if err := r.db.WithContext(ctx).Joins("user").Count(&total).Error; err != nil {
+		return nil, 0, err
+	}
+	return teams, total, nil
 }
 
 func (r *TeamRepository) Update(ctx context.Context, team *domain.Team) error {

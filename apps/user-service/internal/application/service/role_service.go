@@ -173,3 +173,21 @@ func (s *RoleService) SetRolePrivileges(ctx context.Context, roleID uuid.UUID, r
 	resp := updated.ToResponse()
 	return &resp, nil
 }
+
+// ListPrivileges returns all system-defined privileges.
+func (s *RoleService) ListPrivileges(ctx context.Context) ([]string, error) {
+	p := domain.AllPrivileges()
+	if p == nil {
+		return nil, fmt.Errorf("failed to get privileges")
+	}
+	return p, nil
+}
+
+// PrivilegesByDomain returns all system-defined privileges grouped by domain.
+func (s *RoleService) PrivilegesByDomain(ctx context.Context) (map[string][]string, error) {
+	p := domain.PrivilegesByDomain()
+	if p == nil {
+		return nil, fmt.Errorf("failed to get privileges by domain")
+	}
+	return p, nil
+}

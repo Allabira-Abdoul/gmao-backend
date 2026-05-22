@@ -82,6 +82,32 @@ func (m *JWTManager) GenerateAccessToken(userID, email, role string, privileges 
 	return signedToken, expiresAt, nil
 }
 
+// GenerateInternalServiceToken creates a signed JWT for internal microservice communication.
+func (m *JWTManager) GenerateInternalServiceToken(serviceName string) (string, error) {
+	expiresAt := time.Now().Add(5 * time.Minute) // Short-lived token
+
+	claims := &Claims{
+		UserID:     "internal-service",
+		Email:      serviceName + "@gmao.internal",
+		Role:       "System",
+		Privileges: []string{"SYSTEM_ADMIN"},
+		RegisteredClaims: jwt.RegisteredClaims{
+			ExpiresAt: jwt.NewNumericDate(expiresAt),
+			IssuedAt:  jwt.NewNumericDate(time.Now()),
+			ID:        uuid.NewString(),
+			Issuer:    serviceName,
+		},
+	}
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	signedToken, err := token.SignedString(m.secret)
+	if err != nil {
+		return "", fmt.Errorf("failed to sign internal service token: %w", err)
+	}
+
+	return signedToken, nil
+}
+
 // GenerateRefreshToken creates a signed JWT refresh token.
 func (m *JWTManager) GenerateRefreshToken(userID string) (string, time.Time, error) {
 	expiresAt := time.Now().Add(m.refreshExpiry)

@@ -13,6 +13,7 @@ import (
 	pgadapter "backend-gmao/apps/asset-service/internal/adapters/secondary/postgres"
 	"backend-gmao/apps/asset-service/internal/application/service"
 	"backend-gmao/apps/asset-service/internal/core/domain"
+	"backend-gmao/pkg/audit"
 	"backend-gmao/pkg/auth"
 	"backend-gmao/pkg/db"
 	"backend-gmao/pkg/discovery"
@@ -54,8 +55,8 @@ func main() {
 
 	// --- Auto-Migrate Tables ---
 	log.Println("Running database migrations...")
-	if err := database.AutoMigrate(&domain.Asset{}); err != nil {
-		log.Fatalf("Failed to migrate Asset table: %v", err)
+	if err := database.AutoMigrate(&domain.Asset{}, &domain.AssetComponent{}, &domain.MetricThreshold{}); err != nil {
+		log.Fatalf("Failed to migrate Asset tables: %v", err)
 	}
 	log.Println("Database migrations completed")
 
@@ -84,7 +85,9 @@ func main() {
 	assetRepo := pgadapter.NewAssetRepository(database)
 
 	// --- Application Services ---
-	assetService := service.NewAssetService(assetRepo)
+	jwtManagerForInternal := auth.NewJWTManager(jwtSecret, time.Minute*5, time.Minute*5)
+	auditClient := audit.NewClient("asset-service", jwtManagerForInternal)
+	assetService := service.NewAssetService(assetRepo, auditClient)
 
 	// --- Register with Consul ---
 	err = registry.Register(serviceID, serviceName, host, port)

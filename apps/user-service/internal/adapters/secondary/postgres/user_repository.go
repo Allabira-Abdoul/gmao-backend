@@ -58,6 +58,16 @@ func (r *UserRepository) FindByEmail(ctx context.Context, email string) (*domain
 	return &user, nil
 }
 
+// FindByTeamID retrieves a user by team UUID, preloading their role and role privileges.
+func (r *UserRepository) FindByTeamID(ctx context.Context, teamID uuid.UUID) ([]domain.User, error) {
+	var users []domain.User
+	result := r.db.WithContext(ctx).Where("team_id = ?", teamID).Find(&users)
+	if result.Error != nil {
+		return nil, fmt.Errorf("postgres find users by team id: %w", result.Error)
+	}
+	return users, nil
+}
+
 // FindAll retrieves a paginated list of users with their roles.
 func (r *UserRepository) FindAll(ctx context.Context, offset, limit int) ([]domain.User, int64, error) {
 	var users []domain.User
@@ -98,13 +108,4 @@ func (r *UserRepository) Delete(ctx context.Context, id uuid.UUID) error {
 		return fmt.Errorf("postgres delete user: %w", result.Error)
 	}
 	return nil
-}
-
-func (r *UserRepository) FindByTeamID(ctx context.Context, teamID uuid.UUID) ([]domain.User, error) {
-	var users []domain.User
-	result := r.db.WithContext(ctx).Where("team_id = ?", teamID).Find(&users)
-	if result.Error != nil {
-		return nil, fmt.Errorf("postgres find users by team id: %w", result.Error)
-	}
-	return users, nil
 }

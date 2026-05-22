@@ -40,28 +40,25 @@ Retrieve details of the currently logged-in user context.
 - **Body**:
 ```json
 {
-  "status": "success",
-  "data": {
-    "id": "c3b99db1-d419-48e0-bb15-081079d38bb1",
-    "full_name": "Auditor User",
-    "email": "auditor@gmao.com",
-    "status": "ACTIVE",
-    "role": {
-      "id": "a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d",
-      "name": "Auditor",
-      "description": "System auditor with logs inspection privilege",
-      "privileges": [
-        "USER_VIEW",
-        "ROLE_VIEW",
-        "SYSTEM_AUDIT_VIEW"
-      ],
-      "created_at": "2026-05-19T10:00:00Z",
-      "updated_at": "2026-05-19T10:00:00Z"
-    },
-    "team": null,
-    "created_at": "2026-05-19T10:15:00Z",
-    "updated_at": "2026-05-19T10:15:00Z"
-  }
+  "id": "c3b99db1-d419-48e0-bb15-081079d38bb1",
+  "full_name": "Auditor User",
+  "email": "auditor@gmao.com",
+  "status": "ACTIVE",
+  "role": {
+    "id": "a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d",
+    "name": "Auditor",
+    "description": "System auditor with logs inspection privilege",
+    "privileges": [
+      "USER_VIEW",
+      "ROLE_VIEW",
+      "SYSTEM_AUDIT_VIEW"
+    ],
+    "created_at": "2026-05-19T10:00:00Z",
+    "updated_at": "2026-05-19T10:00:00Z"
+  },
+  "team": null,
+  "created_at": "2026-05-19T10:15:00Z",
+  "updated_at": "2026-05-19T10:15:00Z"
 }
 ```
 
@@ -85,33 +82,25 @@ Paginated list of all users in the system.
 - **Status Code**: `200 OK`
 - **Body**:
 ```json
-{
-  "status": "success",
-  "data": [
-    {
-      "id": "c3b99db1-d419-48e0-bb15-081079d38bb1",
-      "full_name": "Auditor User",
-      "email": "auditor@gmao.com",
-      "status": "ACTIVE",
-      "role": {
-        "id": "a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d",
-        "name": "Auditor",
-        "description": "System auditor with logs inspection privilege",
-        "privileges": ["USER_VIEW", "ROLE_VIEW", "SYSTEM_AUDIT_VIEW"],
-        "created_at": "2026-05-19T10:00:00Z",
-        "updated_at": "2026-05-19T10:00:00Z"
-      },
-      "team": null,
-      "created_at": "2026-05-19T10:15:00Z",
-      "updated_at": "2026-05-19T10:15:00Z"
-    }
-  ],
-  "meta": {
-    "page": 1,
-    "per_page": 20,
-    "total": 1
+[
+  {
+    "id": "c3b99db1-d419-48e0-bb15-081079d38bb1",
+    "full_name": "Auditor User",
+    "email": "auditor@gmao.com",
+    "status": "ACTIVE",
+    "role": {
+      "id": "a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d",
+      "name": "Auditor",
+      "description": "System auditor with logs inspection privilege",
+      "privileges": ["USER_VIEW", "ROLE_VIEW", "SYSTEM_AUDIT_VIEW"],
+      "created_at": "2026-05-19T10:00:00Z",
+      "updated_at": "2026-05-19T10:00:00Z"
+    },
+    "team": null,
+    "created_at": "2026-05-19T10:15:00Z",
+    "updated_at": "2026-05-19T10:15:00Z"
   }
-}
+]
 ```
 
 ---
@@ -133,11 +122,7 @@ Retrieve user record by unique UUID.
 - **Body**:
 ```json
 {
-  "status": "error",
-  "error": {
-    "code": "NOT_FOUND",
-    "message": "User not found"
-  }
+  "error": "User not found"
 }
 ```
 
@@ -178,11 +163,7 @@ Register a new user into the system.
 - **Body**:
 ```json
 {
-  "status": "error",
-  "error": {
-    "code": "EMAIL_EXISTS",
-    "message": "email already registered"
-  }
+  "error": "email already registered"
 }
 ```
 
@@ -220,10 +201,7 @@ Permanently remove a user account.
 - **Body**:
 ```json
 {
-  "status": "success",
-  "data": {
-    "message": "User deleted successfully"
-  }
+  "message": "User deleted successfully"
 }
 ```
 

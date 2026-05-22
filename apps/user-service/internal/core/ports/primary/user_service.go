@@ -25,6 +25,8 @@ type RoleServicePort interface {
 	UpdateRole(ctx context.Context, id uuid.UUID, req domain.UpdateRoleRequest) (*domain.RoleResponse, error)
 	DeleteRole(ctx context.Context, id uuid.UUID) error
 	SetRolePrivileges(ctx context.Context, roleID uuid.UUID, req domain.SetPrivilegesRequest) (*domain.RoleResponse, error)
+	ListPrivileges(ctx context.Context) ([]string, error)
+	PrivilegesByDomain(ctx context.Context) (map[string][]string, error)
 }
 
 // TeamServicePort defines the primary port for team-related use cases.

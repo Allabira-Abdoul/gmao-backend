@@ -69,10 +69,10 @@ func (s *TeamService) GetTeamByID(ctx context.Context, id uuid.UUID) (*domain.Te
 }
 
 // ListTeams returns all teams.
-func (s *TeamService) ListTeams(ctx context.Context) ([]domain.TeamResponse, error) {
-	teams, err := s.teamRepo.FindAll(ctx)
+func (s *TeamService) ListTeams(ctx context.Context, limit, offset int) ([]domain.TeamResponse, int64, error) {
+	teams, total, err := s.teamRepo.FindAll(ctx, limit, offset)
 	if err != nil {
-		return nil, fmt.Errorf("failed to list teams: %w", err)
+		return nil, 0, fmt.Errorf("failed to list teams: %w", err)
 	}
 
 	responses := make([]domain.TeamResponse, 0, len(teams))
@@ -80,7 +80,7 @@ func (s *TeamService) ListTeams(ctx context.Context) ([]domain.TeamResponse, err
 		responses = append(responses, t.ToResponse())
 	}
 
-	return responses, nil
+	return responses, total, nil
 }
 
 // UpdateTeam updates an existing team's name and/or description.

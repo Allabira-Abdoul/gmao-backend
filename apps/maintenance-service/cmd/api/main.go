@@ -10,9 +10,11 @@ import (
 	"time"
 
 	httphandler "backend-gmao/apps/maintenance-service/internal/adapters/primary/http"
+	sechttp "backend-gmao/apps/maintenance-service/internal/adapters/secondary/http"
 	pgadapter "backend-gmao/apps/maintenance-service/internal/adapters/secondary/postgres"
 	"backend-gmao/apps/maintenance-service/internal/application/service"
 	"backend-gmao/apps/maintenance-service/internal/core/domain"
+	"backend-gmao/pkg/audit"
 	"backend-gmao/pkg/auth"
 	"backend-gmao/pkg/db"
 	"backend-gmao/pkg/discovery"
@@ -54,11 +56,8 @@ func main() {
 
 	// --- Auto-Migrate Tables ---
 	log.Println("Running database migrations...")
-	if err := database.AutoMigrate(&domain.OrdreTravail{}); err != nil {
-		log.Fatalf("Failed to migrate OrdreTravail table: %v", err)
-	}
-	if err := database.AutoMigrate(&domain.Intervention{}); err != nil {
-		log.Fatalf("Failed to migrate Intervention table: %v", err)
+	if err := database.AutoMigrate(&domain.OrdreTravail{}, &domain.Intervention{}, &domain.MetricMeasurement{}); err != nil {
+		log.Fatalf("Failed to migrate Maintenance tables: %v", err)
 	}
 	log.Println("Database migrations completed")
 
@@ -86,8 +85,13 @@ func main() {
 	// --- Repositories (Secondary Adapters) ---
 	maintenanceRepo := pgadapter.NewMaintenanceRepository(database)
 
+	// --- Internal Clients ---
+	analyticsClient := sechttp.NewAnalyticsClient(jwtManager)
+
 	// --- Application Services ---
-	maintenanceService := service.NewMaintenanceService(maintenanceRepo)
+	jwtManagerForInternal := auth.NewJWTManager(jwtSecret, time.Minute*5, time.Minute*5)
+	auditClient := audit.NewClient("maintenance-service", jwtManagerForInternal)
+	maintenanceService := service.NewMaintenanceService(maintenanceRepo, analyticsClient, auditClient)
 
 	// --- Register with Consul ---
 	err = registry.Register(serviceID, serviceName, host, port)

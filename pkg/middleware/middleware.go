@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"context"
 	"net/http"
 	"os"
 	"strings"
@@ -9,12 +10,14 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+type ContextKey string
+
 const (
 	// Context keys for storing authenticated user information.
-	ContextKeyUserID     = "auth_user_id"
-	ContextKeyEmail      = "auth_email"
-	ContextKeyRole       = "auth_role"
-	ContextKeyPrivileges = "auth_privileges"
+	ContextKeyUserID     ContextKey = "auth_user_id"
+	ContextKeyEmail      ContextKey = "auth_email"
+	ContextKeyRole       ContextKey = "auth_role"
+	ContextKeyPrivileges ContextKey = "auth_privileges"
 )
 
 // RequireAuth returns a Gin middleware that validates the JWT access token
@@ -58,11 +61,19 @@ func RequireAuth(jwtManager *auth.JWTManager) gin.HandlerFunc {
 			return
 		}
 
-		// Inject user info into Gin context for downstream handlers
-		c.Set(ContextKeyUserID, claims.UserID)
-		c.Set(ContextKeyEmail, claims.Email)
-		c.Set(ContextKeyRole, claims.Role)
-		c.Set(ContextKeyPrivileges, claims.Privileges)
+		// Inject user info into Gin context for downstream Gin middlewares
+		c.Set(string(ContextKeyUserID), claims.UserID)
+		c.Set(string(ContextKeyEmail), claims.Email)
+		c.Set(string(ContextKeyRole), claims.Role)
+		c.Set(string(ContextKeyPrivileges), claims.Privileges)
+
+		// Inject user info into standard request context for downstream service layer
+		ctx := c.Request.Context()
+		ctx = context.WithValue(ctx, ContextKeyUserID, claims.UserID)
+		ctx = context.WithValue(ctx, ContextKeyEmail, claims.Email)
+		ctx = context.WithValue(ctx, ContextKeyRole, claims.Role)
+		ctx = context.WithValue(ctx, ContextKeyPrivileges, claims.Privileges)
+		c.Request = c.Request.WithContext(ctx)
 
 		c.Next()
 	}
@@ -72,7 +83,7 @@ func RequireAuth(jwtManager *auth.JWTManager) gin.HandlerFunc {
 // has the specified privilege. Must be used after RequireAuth.
 func RequirePrivilege(privilege string) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		privileges, exists := c.Get(ContextKeyPrivileges)
+		privileges, exists := c.Get(string(ContextKeyPrivileges))
 		if !exists {
 			c.AbortWithStatusJSON(http.StatusForbidden, gin.H{
 				"success": false,
@@ -113,6 +124,59 @@ func RequirePrivilege(privilege string) gin.HandlerFunc {
 		})
 	}
 }
+
+// RequireAnyPrivilege returns a Gin middleware that checks if the authenticated user
+// has AT LEAST ONE of the specified privileges. Must be used after RequireAuth.
+func RequireAnyPrivilege(allowedPrivileges ...string) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		privileges, exists := c.Get(string(ContextKeyPrivileges))
+		if !exists {
+			c.AbortWithStatusJSON(http.StatusForbidden, gin.H{
+				"success": false,
+				"error": gin.H{
+					"code":    "FORBIDDEN",
+					"message": "Access denied: no privileges found",
+				},
+			})
+			return
+		}
+
+		userPrivileges, ok := privileges.([]string)
+		if !ok {
+			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+				"success": false,
+				"error": gin.H{
+					"code":    "INTERNAL_ERROR",
+					"message": "Failed to parse user privileges",
+				},
+			})
+			return
+		}
+
+		// SYSTEM_ADMIN has access to everything, or match any allowed privilege
+		for _, up := range userPrivileges {
+			if up == "SYSTEM_ADMIN" {
+				c.Next()
+				return
+			}
+			for _, ap := range allowedPrivileges {
+				if up == ap {
+					c.Next()
+					return
+				}
+			}
+		}
+
+		c.AbortWithStatusJSON(http.StatusForbidden, gin.H{
+			"success": false,
+			"error": gin.H{
+				"code":    "INSUFFICIENT_PRIVILEGES",
+				"message": "You do not have any of the required privileges to access this resource",
+			},
+		})
+	}
+}
+
 
 // Cors returns a middleware that handles Cross-Origin Resource Sharing (CORS).
 // This is essential for allowing the Flutter Web frontend to communicate with the backend.

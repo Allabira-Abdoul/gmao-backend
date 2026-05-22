@@ -29,48 +29,37 @@ Retrieve a chronological log of all recorded actions in the system.
 - **Status Code**: `200 OK`
 - **Body**:
 ```json
-{
-  "status": "success",
-  "data": [
-    {
-      "id": "e44d5c41-862d-45df-bb78-ecb18360d8ef",
-      "service_name": "user-service",
-      "action": "USER_CREATE",
-      "details": "Registered new technician abdou@gmao.local with role TECHNICIAN",
-      "user_id": "8fa1ad78-831e-4cb8-8c10-9bd74130be52",
-      "performed_at": "2026-05-19T11:45:00Z"
-    },
-    {
-      "id": "7ca9da22-e421-4fba-bb89-11c9d9d3000b",
-      "service_name": "auth-service",
-      "action": "USER_LOGIN",
-      "details": "User session created via web interface",
-      "user_id": "8fa1ad78-831e-4cb8-8c10-9bd74130be52",
-      "performed_at": "2026-05-19T11:40:00Z"
-    }
-  ]
-}
+[
+  {
+    "id": "e44d5c41-862d-45df-bb78-ecb18360d8ef",
+    "service_name": "user-service",
+    "action": "USER_CREATE",
+    "details": "Registered new technician abdou@gmao.local with role TECHNICIAN",
+    "user_id": "8fa1ad78-831e-4cb8-8c10-9bd74130be52",
+    "performed_at": "2026-05-19T11:45:00Z"
+  },
+  {
+    "id": "7ca9da22-e421-4fba-bb89-11c9d9d3000b",
+    "service_name": "auth-service",
+    "action": "USER_LOGIN",
+    "details": "User session created via web interface",
+    "user_id": "8fa1ad78-831e-4cb8-8c10-9bd74130be52",
+    "performed_at": "2026-05-19T11:40:00Z"
+  }
+]
 ```
 
 #### Error Responses
 - **Status Code**: `401 Unauthorized` (Token missing or malformed)
 ```json
 {
-  "status": "error",
-  "error": {
-    "code": "UNAUTHORIZED",
-    "message": "Authorization header is required and must begin with Bearer"
-  }
+  "error": "Authorization header is required and must begin with Bearer"
 }
 ```
 - **Status Code**: `403 Forbidden` (User does not possess dynamic `AUDITOR` privilege)
 ```json
 {
-  "status": "error",
-  "error": {
-    "code": "FORBIDDEN",
-    "message": "Dynamic privilege 'AUDITOR' is required to perform this action"
-  }
+  "error": "Dynamic privilege 'AUDITOR' is required to perform this action"
 }
 ```
 
@@ -110,15 +99,12 @@ Log a secure action token. This endpoint is dedicated to system microservices an
 - **Body**:
 ```json
 {
-  "status": "success",
-  "data": {
-    "id": "cf63db24-f719-482a-a9bd-8311d9d93ee4",
-    "service_name": "asset-service",
-    "action": "ASSET_CREATE",
-    "details": "Created asset CNC Milling Machine (Code: CNC-04)",
-    "user_id": "8fa1ad78-831e-4cb8-8c10-9bd74130be52",
-    "performed_at": "2026-05-19T12:05:00Z"
-  }
+  "id": "cf63db24-f719-482a-a9bd-8311d9d93ee4",
+  "service_name": "asset-service",
+  "action": "ASSET_CREATE",
+  "details": "Created asset CNC Milling Machine (Code: CNC-04)",
+  "user_id": "8fa1ad78-831e-4cb8-8c10-9bd74130be52",
+  "performed_at": "2026-05-19T12:05:00Z"
 }
 ```
 
@@ -126,10 +112,6 @@ Log a secure action token. This endpoint is dedicated to system microservices an
 - **Status Code**: `403 Forbidden` (Direct access via gateway or missing internal secret header)
 ```json
 {
-  "status": "error",
-  "error": {
-    "code": "FORBIDDEN",
-    "message": "Only internal network calls are allowed to perform this operation"
-  }
+  "error": "Only internal network calls are allowed to perform this operation"
 }
 ```

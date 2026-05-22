@@ -27,12 +27,6 @@ func RegisterRoutes(
 		internal.GET("/by-id", internalHandler.GetUserByID)
 	}
 
-	// --- Public endpoints ---
-	// System privileges reference (useful for admin UIs)
-	router.GET("/privileges", func(c *gin.Context) {
-		roleHandler.ListPrivileges(c)
-	})
-
 	// --- Authenticated endpoints ---
 	authenticated := router.Group("/")
 	authenticated.Use(middleware.RequireAuth(jwtManager))
@@ -59,6 +53,7 @@ func RegisterRoutes(
 			roles.PUT("/:id", middleware.RequirePrivilege(domain.PrivilegeRoleUpdate), roleHandler.UpdateRole)
 			roles.DELETE("/:id", middleware.RequirePrivilege(domain.PrivilegeRoleDelete), roleHandler.DeleteRole)
 			roles.PUT("/:id/privileges", middleware.RequirePrivilege(domain.PrivilegeRoleUpdate), roleHandler.SetRolePrivileges)
+			roles.GET("/privileges", middleware.RequireAnyPrivilege(domain.PrivilegeSystemConfig, domain.PrivilegeSystemAdmin), roleHandler.ListPrivileges)
 		}
 	}
 }

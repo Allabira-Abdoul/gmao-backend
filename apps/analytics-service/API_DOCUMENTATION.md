@@ -29,25 +29,22 @@ Retrieve all registered system performance metrics.
 - **Status Code**: `200 OK`
 - **Body**:
 ```json
-{
-  "status": "success",
-  "data": [
-    {
-      "id": "e44d5c41-862d-45df-bb78-ecb18360d8ef",
-      "name": "cpu_utilization",
-      "value": 45.2,
-      "category": "system_performance",
-      "timestamp": "2026-05-19T11:45:00Z"
-    },
-    {
-      "id": "8fa1ad78-831e-4cb8-8c10-9bd74130be52",
-      "name": "mean_time_to_repair",
-      "value": 120.5,
-      "category": "maintenance_kpi",
-      "timestamp": "2026-05-19T11:50:00Z"
-    }
-  ]
-}
+[
+  {
+    "id": "e44d5c41-862d-45df-bb78-ecb18360d8ef",
+    "name": "cpu_utilization",
+    "value": 45.2,
+    "category": "system_performance",
+    "timestamp": "2026-05-19T11:45:00Z"
+  },
+  {
+    "id": "8fa1ad78-831e-4cb8-8c10-9bd74130be52",
+    "name": "mean_time_to_repair",
+    "value": 120.5,
+    "category": "maintenance_kpi",
+    "timestamp": "2026-05-19T11:50:00Z"
+  }
+]
 ```
 
 ---
@@ -65,14 +62,11 @@ Retrieve a single performance metric record by its UUID.
 - **Body**:
 ```json
 {
-  "status": "success",
-  "data": {
-    "id": "e44d5c41-862d-45df-bb78-ecb18360d8ef",
-    "name": "cpu_utilization",
-    "value": 45.2,
-    "category": "system_performance",
-    "timestamp": "2026-05-19T11:45:00Z"
-  }
+  "id": "e44d5c41-862d-45df-bb78-ecb18360d8ef",
+  "name": "cpu_utilization",
+  "value": 45.2,
+  "category": "system_performance",
+  "timestamp": "2026-05-19T11:45:00Z"
 }
 ```
 
@@ -80,21 +74,13 @@ Retrieve a single performance metric record by its UUID.
 - **Status Code**: `400 Bad Request` (Invalid UUID format)
 ```json
 {
-  "status": "error",
-  "error": {
-    "code": "INVALID_ID",
-    "message": "Invalid UUID format"
-  }
+  "error": "Invalid UUID format"
 }
 ```
 - **Status Code**: `404 Not Found` (Metric not found)
 ```json
 {
-  "status": "error",
-  "error": {
-    "code": "NOT_FOUND",
-    "message": "Metric not found"
-  }
+  "error": "Metric not found"
 }
 ```
 
@@ -112,18 +98,15 @@ Retrieve all metrics recorded within a specific category.
 - **Status Code**: `200 OK`
 - **Body**:
 ```json
-{
-  "status": "success",
-  "data": [
-    {
-      "id": "e44d5c41-862d-45df-bb78-ecb18360d8ef",
-      "name": "cpu_utilization",
-      "value": 45.2,
-      "category": "system_performance",
-      "timestamp": "2026-05-19T11:45:00Z"
-    }
-  ]
-}
+[
+  {
+    "id": "e44d5c41-862d-45df-bb78-ecb18360d8ef",
+    "name": "cpu_utilization",
+    "value": 45.2,
+    "category": "system_performance",
+    "timestamp": "2026-05-19T11:45:00Z"
+  }
+]
 ```
 
 ---
@@ -157,13 +140,10 @@ Submit and log a new operational or performance metric.
 - **Body**:
 ```json
 {
-  "status": "success",
-  "data": {
-    "id": "7ca9da22-e421-4fba-bb89-11c9d9d3000b",
-    "name": "mttr_hours",
-    "value": 4.5,
-    "category": "maintenance_kpi",
-    "timestamp": "2026-05-19T12:00:00Z"
-  }
+  "id": "7ca9da22-e421-4fba-bb89-11c9d9d3000b",
+  "name": "mttr_hours",
+  "value": 4.5,
+  "category": "maintenance_kpi",
+  "timestamp": "2026-05-19T12:00:00Z"
 }
 ```

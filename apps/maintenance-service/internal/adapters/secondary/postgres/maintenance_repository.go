@@ -51,7 +51,7 @@ func (r *maintenanceRepository) CreateIntervention(ctx context.Context, interven
 
 func (r *maintenanceRepository) FindInterventionsByWorkOrderID(ctx context.Context, workOrderID uuid.UUID) ([]domain.Intervention, error) {
 	var interventions []domain.Intervention
-	if err := r.db.WithContext(ctx).Where("work_order_id = ?", workOrderID).Find(&interventions).Error; err != nil {
+	if err := r.db.WithContext(ctx).Preload("Measurements").Where("work_order_id = ?", workOrderID).Find(&interventions).Error; err != nil {
 		return nil, err
 	}
 	return interventions, nil

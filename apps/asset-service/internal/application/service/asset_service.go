@@ -3,10 +3,13 @@ package service
 import (
 	"context"
 	"errors"
+	"fmt"
 	"time"
 
 	"backend-gmao/apps/asset-service/internal/core/domain"
 	"backend-gmao/apps/asset-service/internal/core/ports/secondary"
+	"backend-gmao/pkg/audit"
+	"backend-gmao/pkg/middleware"
 	"github.com/google/uuid"
 )
 
@@ -17,12 +20,34 @@ var (
 
 // AssetService implements primary.AssetService.
 type AssetService struct {
-	assetRepo secondary.AssetRepository
+	assetRepo   secondary.AssetRepository
+	auditClient audit.Client
 }
 
 // NewAssetService initializes a new AssetService instance.
-func NewAssetService(assetRepo secondary.AssetRepository) *AssetService {
-	return &AssetService{assetRepo: assetRepo}
+func NewAssetService(assetRepo secondary.AssetRepository, auditClient audit.Client) *AssetService {
+	return &AssetService{
+		assetRepo:   assetRepo,
+		auditClient: auditClient,
+	}
+}
+
+func (s *AssetService) fireAudit(ctx context.Context, action, details string) {
+	userID, ok := ctx.Value(middleware.ContextKeyUserID).(string)
+	var uidPtr *string
+	if ok && userID != "" {
+		uidPtr = &userID
+	}
+	
+	go func() {
+		bgCtx := context.Background()
+		_ = s.auditClient.LogEvent(bgCtx, audit.AuditEvent{
+			ServiceName: "asset-service",
+			Action:      action,
+			Details:     details,
+			UserID:      uidPtr,
+		})
+	}()
 }
 
 func (s *AssetService) CreateAsset(ctx context.Context, req domain.CreateAssetRequest) (*domain.AssetResponse, error) {
@@ -45,6 +70,8 @@ func (s *AssetService) CreateAsset(ctx context.Context, req domain.CreateAssetRe
 	if err := s.assetRepo.Create(ctx, asset); err != nil {
 		return nil, err
 	}
+
+	s.fireAudit(ctx, "CREATE_ASSET", fmt.Sprintf("Created asset %s (%s)", asset.Code, asset.ID))
 
 	resp := asset.ToResponse()
 	return &resp, nil
@@ -78,16 +105,24 @@ func (s *AssetService) UpdateAsset(ctx context.Context, id uuid.UUID, req domain
 		return nil, err
 	}
 
+	s.fireAudit(ctx, "UPDATE_ASSET", fmt.Sprintf("Updated asset %s (%s)", asset.Code, asset.ID))
+
 	resp := asset.ToResponse()
 	return &resp, nil
 }
 
 func (s *AssetService) DeleteAsset(ctx context.Context, id uuid.UUID) error {
-	_, err := s.assetRepo.FindByID(ctx, id)
+	asset, err := s.assetRepo.FindByID(ctx, id)
 	if err != nil {
 		return ErrAssetNotFound
 	}
-	return s.assetRepo.Delete(ctx, id)
+	
+	if err := s.assetRepo.Delete(ctx, id); err != nil {
+		return err
+	}
+	
+	s.fireAudit(ctx, "DELETE_ASSET", fmt.Sprintf("Deleted asset %s (%s)", asset.Code, asset.ID))
+	return nil
 }
 
 func (s *AssetService) GetAsset(ctx context.Context, id uuid.UUID) (*domain.AssetResponse, error) {

@@ -21,12 +21,12 @@ func RegisterRoutes(
 	{
 		assets := authenticated.Group("/assets")
 		{
-			assets.POST("", assetHandler.CreateAsset)
-			assets.GET("", assetHandler.ListAssets)
-			assets.GET("/:id", assetHandler.GetAsset)
-			assets.GET("/code/:code", assetHandler.GetAssetByCode)
-			assets.PUT("/:id", assetHandler.UpdateAsset)
-			assets.DELETE("/:id", assetHandler.DeleteAsset)
+			assets.POST("", middleware.RequirePrivilege("ASSET_CREATE"), assetHandler.CreateAsset)
+			assets.GET("", middleware.RequirePrivilege("ASSET_VIEW"), assetHandler.ListAssets)
+			assets.GET("/:id", middleware.RequirePrivilege("ASSET_VIEW"), assetHandler.GetAsset)
+			assets.GET("/code/:code", middleware.RequirePrivilege("ASSET_VIEW"), assetHandler.GetAssetByCode)
+			assets.PUT("/:id", middleware.RequirePrivilege("ASSET_UPDATE"), assetHandler.UpdateAsset)
+			assets.DELETE("/:id", middleware.RequirePrivilege("ASSET_DELETE"), assetHandler.DeleteAsset)
 		}
 	}
 }

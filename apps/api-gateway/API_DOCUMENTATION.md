@@ -26,7 +26,7 @@ Requests matching `/api/{service}/*` are proxy-routed dynamically via **Consul S
 
 | Service Path Prefix | Target Service Registered ID | Allowed Downstream Ports |
 | :--- | :--- | :--- |
-| `/api/authentication/*` | `authentication-service` | `8081` |
+| `/api/auth/*` | `auth-service` | `8081` |
 | `/api/user/*` | `user-service` | `8082` |
 | `/api/asset/*` | `asset-service` | `8083` |
 | `/api/maintenance/*` | `maintenance-service` | `8084` |
@@ -74,7 +74,7 @@ Dynamic catch-all path forwarding to Whitelisted microservices.
 
 #### Request Format
 - **Path Parameters**:
-  - `service`: `user`, `authentication`, `asset`, `maintenance`, `prediction`, `analytics`, `audit`
+  - `service`: `user`, `auth`, `asset`, `maintenance`, `prediction`, `analytics`, `audit`
   - `path`: Downstream service resource path.
 
 #### Failure Response (Service Not Whitelisted)

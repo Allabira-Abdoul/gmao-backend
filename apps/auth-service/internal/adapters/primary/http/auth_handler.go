@@ -28,6 +28,10 @@ func (h *AuthHandler) CreateSession(c *gin.Context) {
 
 	resp, err := h.authService.CreateSession(c.Request.Context(), req)
 	if err != nil {
+		if err.Error() == "invalid email or password" {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+			return
+		}
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}

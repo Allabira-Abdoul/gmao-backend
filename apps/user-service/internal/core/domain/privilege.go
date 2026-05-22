@@ -70,6 +70,7 @@ const (
 // --- Analytics ---
 const (
 	PrivilegeAnalyticsView   = "ANALYTICS_VIEW"
+	PrivilegeAnalyticsWrite  = "ANALYTICS_WRITE"
 	PrivilegeAnalyticsExport = "ANALYTICS_EXPORT"
 	PrivilegeAnalyticsImport = "ANALYTICS_IMPORT"
 )
@@ -79,6 +80,13 @@ const (
 	PrivilegeSystemAdmin     = "SYSTEM_ADMIN"
 	PrivilegeSystemConfig    = "SYSTEM_CONFIG"
 	PrivilegeSystemAuditView = "SYSTEM_AUDIT_VIEW"
+)
+
+// --- Audit Logs ---
+const (
+	PrivilegeAuditLogView   = "AUDIT_LOG_VIEW"
+	PrivilegeAuditLogExport = "AUDIT_LOG_EXPORT"
+	PrivilegeAuditLogImport = "AUDIT_LOG_IMPORT"
 )
 
 // AllPrivileges returns the exhaustive list of all system-defined privileges.
@@ -104,7 +112,7 @@ func AllPrivileges() []string {
 		PrivilegeInventoryView, PrivilegeInventoryCreate,
 		PrivilegeInventoryUpdate, PrivilegeInventoryDelete, PrivilegeInventoryAdjust,
 		// Analytics
-		PrivilegeAnalyticsView, PrivilegeAnalyticsExport,
+		PrivilegeAnalyticsView, PrivilegeAnalyticsWrite, PrivilegeAnalyticsExport,
 		// System
 		/// Can perform any action on the system
 		PrivilegeSystemAdmin, 
@@ -144,7 +152,7 @@ func PrivilegesByDomain() map[string][]string {
 			PrivilegeInventoryUpdate, PrivilegeInventoryDelete, PrivilegeInventoryAdjust,
 		},
 		"Analytics": {
-			PrivilegeAnalyticsView, PrivilegeAnalyticsExport,
+			PrivilegeAnalyticsView, PrivilegeAnalyticsWrite, PrivilegeAnalyticsExport,
 		},
 		"System Administration": {
 			PrivilegeSystemAdmin, PrivilegeSystemConfig, PrivilegeSystemAuditView,

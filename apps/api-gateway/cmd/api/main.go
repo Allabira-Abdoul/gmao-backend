@@ -95,7 +95,7 @@ func main() {
 	allowedServices := map[string]bool{
 		"analytics":      true,
 		"asset":          true,
-		"authentication": true,
+		"auth": true,
 		"maintenance":    true,
 		"prediction":     true,
 		"user":           true,

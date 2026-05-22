@@ -36,7 +36,7 @@ The API Gateway listens on port **8080** and routes requests dynamically to down
 
 | Dynamic Prefix Path | Downstream Service | Consul Registered Name | Default Downstream Port |
 | :--- | :--- | :--- | :--- |
-| `/api/authentication/*` | Authentication Service | `authentication-service` | `8081` |
+| `/api/auth/*` | Authentication Service | `auth-service` | `8081` |
 | `/api/user/*` | User & RBAC Service | `user-service` | `8082` |
 | `/api/asset/*` | Asset Service | `asset-service` | `8083` |
 | `/api/maintenance/*` | Maintenance Service | `maintenance-service` | `8084` |
@@ -86,50 +86,33 @@ Our authorization system uses a strict privilege-based RBAC model. Users are ass
 
 ---
 
-## 🌐 Unified Response Envelope & Errors
+## 🌐 Response Format & Errors
 
-All JSON responses follow a standardized payload structure to facilitate client consumption.
+All JSON responses follow a standardized payload structure. Success responses return the data payload directly, while error responses return an error message.
 
 ### Success Response Format (Single / Array)
 ```json
 {
-  "status": "success",
-  "data": { ... } // or [ ... ]
+  "id": "...",
+  "field": "value"
 }
-```
-
-### Success Response with Pagination Metadata
-```json
-{
-  "status": "success",
-  "data": [ ... ],
-  "meta": {
-    "page": 1,
-    "per_page": 20,
-    "total": 142
-  }
-}
+// or [ { ... }, { ... } ]
 ```
 
 ### Standard Error Response Format
-Our backend returns a structured error envelope detailing the specific system-level error code.
+Our backend returns a structured error JSON detailing the specific issue.
 ```json
 {
-  "status": "error",
-  "error": {
-    "code": "EMAIL_EXISTS",
-    "message": "The email address has already been registered."
-  }
+  "error": "Detailed error message explaining what went wrong"
 }
 ```
 
-#### Common Error Codes
-- `INVALID_ID`: Provided UUID path parameter is malformed.
-- `NOT_FOUND`: The requested database resource does not exist.
-- `UNAUTHORIZED`: Provided Bearer JWT is missing, invalid, or expired.
-- `FORBIDDEN`: User does not possess the required privilege to perform the action.
-- `EMAIL_EXISTS`: Registration attempted with an already registered email.
-- `ROLE_NOT_FOUND`: Specified Role ID does not exist in the dynamic RBAC schema.
+#### Common Errors
+- `400 Bad Request`: Validation failure or malformed payload.
+- `401 Unauthorized`: Provided Bearer JWT is missing, invalid, or expired.
+- `403 Forbidden`: User does not possess the required privilege to perform the action.
+- `404 Not Found`: The requested resource does not exist.
+- `500 Internal Server Error`: Unexpected backend failure.
 
 ---
 

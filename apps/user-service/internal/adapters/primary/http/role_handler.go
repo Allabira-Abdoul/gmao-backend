@@ -53,6 +53,25 @@ func (h *RoleHandler) GetRole(c *gin.Context) {
 	response.Success(c, http.StatusOK, role)
 }
 
+// ListPrivileges handles GET /privileges — returns all system-defined privileges
+func (h *RoleHandler) ListPrivileges(c *gin.Context) {
+	privileges, err := h.service.ListPrivileges(c.Request.Context())
+	if err != nil {
+		response.Error(c, http.StatusInternalServerError, "INTERNAL_ERROR", "Failed to list privileges")
+		return
+	}
+
+	privilegesByDomain, err := h.service.PrivilegesByDomain(c.Request.Context())
+	if err != nil {
+		response.Error(c, http.StatusInternalServerError, "INTERNAL_ERROR", "Failed to list privileges by domain")
+		return
+	}
+	response.Success(c, http.StatusOK, gin.H{
+		"privileges":           privileges,
+		"privileges_by_domain": privilegesByDomain,
+	})
+}
+
 // CreateRole handles POST /roles
 func (h *RoleHandler) CreateRole(c *gin.Context) {
 	var req domain.CreateRoleRequest
@@ -158,12 +177,4 @@ func (h *RoleHandler) SetRolePrivileges(c *gin.Context) {
 	}
 
 	response.Success(c, http.StatusOK, role)
-}
-
-// ListPrivileges handles GET /privileges — returns all system-defined privileges
-func (h *RoleHandler) ListPrivileges(c *gin.Context) {
-	response.Success(c, http.StatusOK, gin.H{
-		"privileges":           domain.AllPrivileges(),
-		"privileges_by_domain": domain.PrivilegesByDomain(),
-	})
 }

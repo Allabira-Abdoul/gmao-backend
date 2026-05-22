@@ -53,6 +53,39 @@ func seedRoles(db *gorm.DB) {
 				domain.PrivilegeInventoryView, domain.PrivilegeInventoryUpdate,
 			},
 		},
+		{
+			Name:        "Operator",
+			Description: "Operator — perform maintenance tasks",
+			Privileges: []string{
+				domain.PrivilegeAssetView,
+				domain.PrivilegeWorkOrderView, domain.PrivilegeWorkOrderUpdate, domain.PrivilegeWorkOrderClose,
+				domain.PrivilegeMaintenanceView,
+				domain.PrivilegeInventoryView, domain.PrivilegeInventoryUpdate,
+			},
+		},
+		{
+			Name:        "Planner",
+			Description: "Planner — maintenance planning and scheduling",
+			Privileges: []string{
+				domain.PrivilegeAssetView,
+				domain.PrivilegeWorkOrderView, domain.PrivilegeWorkOrderCreate, domain.PrivilegeWorkOrderUpdate,
+				domain.PrivilegeMaintenanceView, domain.PrivilegeMaintenancePlanCreate,
+				domain.PrivilegeMaintenancePlanUpdate, domain.PrivilegeMaintenanceSchedule,
+				domain.PrivilegeInventoryView,
+				domain.PrivilegeAnalyticsView, domain.PrivilegeAnalyticsExport,
+			},
+		},
+		{
+			Name:        "Auditor",
+			Description: "Auditor — perform audit tasks",
+			Privileges: []string{
+				domain.PrivilegeAssetView,
+				domain.PrivilegeWorkOrderView,
+				domain.PrivilegeMaintenanceView,
+				domain.PrivilegeInventoryView,
+				domain.PrivilegeAuditLogView, domain.PrivilegeAuditLogExport, domain.PrivilegeAuditLogImport,
+			},
+		},
 	}
 
 	for _, r := range roles {

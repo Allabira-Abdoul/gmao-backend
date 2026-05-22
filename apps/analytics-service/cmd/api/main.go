@@ -10,6 +10,7 @@ import (
 	"time"
 
 	httphandler "backend-gmao/apps/analytics-service/internal/adapters/primary/http"
+	sechttp "backend-gmao/apps/analytics-service/internal/adapters/secondary/http"
 	pgadapter "backend-gmao/apps/analytics-service/internal/adapters/secondary/postgres"
 	"backend-gmao/apps/analytics-service/internal/application/service"
 	"backend-gmao/apps/analytics-service/internal/core/domain"
@@ -54,7 +55,7 @@ func main() {
 
 	// --- Auto-Migrate Tables ---
 	log.Println("Running database migrations...")
-	if err := database.AutoMigrate(&domain.Metric{}); err != nil {
+	if err := database.AutoMigrate(&domain.Metric{}, &domain.AssetKpiState{}); err != nil {
 		log.Fatalf("Failed to migrate Metric table: %v", err)
 	}
 	log.Println("Database migrations completed")
@@ -82,9 +83,13 @@ func main() {
 
 	// --- Repositories (Secondary Adapters) ---
 	metricRepo := pgadapter.NewMetricRepository(database)
+	kpiRepo := pgadapter.NewKpiRepository(database)
+
+	// --- Internal Clients ---
+	assetClient := sechttp.NewAssetClient(jwtManager)
 
 	// --- Application Services ---
-	analyticsService := service.NewAnalyticsService(metricRepo)
+	analyticsService := service.NewAnalyticsService(metricRepo, kpiRepo, assetClient)
 
 	// --- Register with Consul ---
 	err = registry.Register(serviceID, serviceName, host, port)

@@ -13,4 +13,9 @@ type AnalyticsService interface {
 	GetMetric(ctx context.Context, id uuid.UUID) (*domain.MetricResponse, error)
 	GetAllMetrics(ctx context.Context) ([]domain.MetricResponse, error)
 	GetMetricsByCategory(ctx context.Context, category string) ([]domain.MetricResponse, error)
+	
+	ProcessMaintenanceEvent(ctx context.Context, event domain.MaintenanceEvent) error
+	GetGlobalKpi(ctx context.Context) (*domain.KpiResponse, error)
+	GetCategoryKpi(ctx context.Context, category string) (*domain.KpiResponse, error)
+	GetAssetKpi(ctx context.Context, assetID uuid.UUID) (*domain.KpiResponse, error)
 }

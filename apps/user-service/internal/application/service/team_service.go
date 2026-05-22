@@ -11,9 +11,9 @@ import (
 )
 
 var (
-	ErrTeamNotFound      = errors.New("team not found")
-	ErrTeamNameExists    = errors.New("a team with this name already exists")
-	ErrTeamHasUsers      = errors.New("cannot delete a team that is assigned to users")
+	ErrTeamNotFound   = errors.New("team not found")
+	ErrTeamNameExists = errors.New("a team with this name already exists")
+	ErrTeamHasUsers   = errors.New("cannot delete a team that is assigned to users")
 )
 
 // TeamService implements the TeamServicePort primary port.

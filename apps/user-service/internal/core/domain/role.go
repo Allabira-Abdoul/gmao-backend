@@ -77,8 +77,8 @@ type CreateRoleRequest struct {
 
 // UpdateRoleRequest is the DTO for updating an existing role.
 type UpdateRoleRequest struct {
-	Name        *string `json:"name,omitempty" binding:"omitempty,min=2,max=100"`
-	Description *string `json:"description,omitempty" binding:"omitempty,max=500"`
+	Name        *string   `json:"name,omitempty" binding:"omitempty,min=2,max=100"`
+	Description *string   `json:"description,omitempty" binding:"omitempty,max=500"`
 	Privileges  *[]string `json:"privileges,omitempty" binding:"omitempty,min=1"`
 }
 

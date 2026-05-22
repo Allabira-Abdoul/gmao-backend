@@ -38,7 +38,7 @@ func (s *AssetService) fireAudit(ctx context.Context, action, details string) {
 	if ok && userID != "" {
 		uidPtr = &userID
 	}
-	
+
 	go func() {
 		bgCtx := context.Background()
 		_ = s.auditClient.LogEvent(bgCtx, audit.AuditEvent{
@@ -116,11 +116,11 @@ func (s *AssetService) DeleteAsset(ctx context.Context, id uuid.UUID) error {
 	if err != nil {
 		return ErrAssetNotFound
 	}
-	
+
 	if err := s.assetRepo.Delete(ctx, id); err != nil {
 		return err
 	}
-	
+
 	s.fireAudit(ctx, "DELETE_ASSET", fmt.Sprintf("Deleted asset %s (%s)", asset.Code, asset.ID))
 	return nil
 }

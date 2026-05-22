@@ -17,17 +17,17 @@ const (
 
 // User represents the User entity in the GMAO system.
 type User struct {
-	ID            uuid.UUID     `gorm:"column:id;type:uuid;primaryKey;default:gen_random_uuid()" json:"id"`
-	FullName      string        `gorm:"column:full_name;not null" json:"full_name"`
-	Email         string        `gorm:"column:email;uniqueIndex;not null" json:"email"`
-	Password      string        `gorm:"column:password;not null" json:"-"`
-	Status        AccountStatus `gorm:"column:status;type:varchar(20);default:'ACTIVE'" json:"status"`
-	RoleID        uuid.UUID     `gorm:"column:role_id;type:uuid;not null" json:"role_id"`
-	Role          Role          `gorm:"foreignKey:RoleID;references:ID;constraint:OnUpdate:CASCADE,OnDelete:RESTRICT;" json:"role,omitempty"`
-	TeamID        *uuid.UUID    `gorm:"column:team_id;type:uuid" json:"team_id"`
-	Team          *Team         `gorm:"foreignKey:TeamID;references:ID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;" json:"team,omitempty"`
-	CreatedAt     time.Time     `gorm:"column:created_at" json:"created_at"`
-	UpdatedAt     time.Time     `gorm:"column:updated_at" json:"updated_at"`
+	ID        uuid.UUID     `gorm:"column:id;type:uuid;primaryKey;default:gen_random_uuid()" json:"id"`
+	FullName  string        `gorm:"column:full_name;not null" json:"full_name"`
+	Email     string        `gorm:"column:email;uniqueIndex;not null" json:"email"`
+	Password  string        `gorm:"column:password;not null" json:"-"`
+	Status    AccountStatus `gorm:"column:status;type:varchar(20);default:'ACTIVE'" json:"status"`
+	RoleID    uuid.UUID     `gorm:"column:role_id;type:uuid;not null" json:"role_id"`
+	Role      Role          `gorm:"foreignKey:RoleID;references:ID;constraint:OnUpdate:CASCADE,OnDelete:RESTRICT;" json:"role,omitempty"`
+	TeamID    *uuid.UUID    `gorm:"column:team_id;type:uuid" json:"team_id"`
+	Team      *Team         `gorm:"foreignKey:TeamID;references:ID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;" json:"team,omitempty"`
+	CreatedAt time.Time     `gorm:"column:created_at" json:"created_at"`
+	UpdatedAt time.Time     `gorm:"column:updated_at" json:"updated_at"`
 }
 
 // TableName overrides the default table name.
@@ -37,25 +37,25 @@ func (User) TableName() string {
 
 // UserResponse is the DTO returned by API endpoints (excludes password).
 type UserResponse struct {
-	ID            uuid.UUID     `json:"id"`
-	FullName      string        `json:"full_name"`
-	Email         string        `json:"email"`
-	Status        AccountStatus `json:"status"`
-	Role          *RoleResponse `json:"role,omitempty"`
-	Team          *TeamResponse `json:"team,omitempty"`
-	CreatedAt     time.Time     `json:"created_at"`
-	UpdatedAt     time.Time     `json:"updated_at"`
+	ID        uuid.UUID     `json:"id"`
+	FullName  string        `json:"full_name"`
+	Email     string        `json:"email"`
+	Status    AccountStatus `json:"status"`
+	Role      *RoleResponse `json:"role,omitempty"`
+	Team      *TeamResponse `json:"team,omitempty"`
+	CreatedAt time.Time     `json:"created_at"`
+	UpdatedAt time.Time     `json:"updated_at"`
 }
 
 // ToResponse converts a User to a UserResponse (safe for API output).
 func (u *User) ToResponse() UserResponse {
 	resp := UserResponse{
-		ID:            u.ID,
-		FullName:      u.FullName,
-		Email:         u.Email,
-		Status:        u.Status,
-		CreatedAt:     u.CreatedAt,
-		UpdatedAt:     u.UpdatedAt,
+		ID:        u.ID,
+		FullName:  u.FullName,
+		Email:     u.Email,
+		Status:    u.Status,
+		CreatedAt: u.CreatedAt,
+		UpdatedAt: u.UpdatedAt,
 	}
 
 	if u.Role.ID != uuid.Nil {
@@ -74,13 +74,13 @@ func (u *User) ToResponse() UserResponse {
 // InternalUserResponse is the DTO used for inter-service communication.
 // It includes the hashed password for authentication verification.
 type InternalUserResponse struct {
-	ID            uuid.UUID     `json:"id"`
-	FullName      string        `json:"full_name"`
-	Email         string        `json:"email"`
-	Password      string        `json:"password"`
-	Status        AccountStatus `json:"status"`
-	RoleName      string        `json:"role_name"`
-	Privileges    []string      `json:"privileges"`
+	ID         uuid.UUID     `json:"id"`
+	FullName   string        `json:"full_name"`
+	Email      string        `json:"email"`
+	Password   string        `json:"password"`
+	Status     AccountStatus `json:"status"`
+	RoleName   string        `json:"role_name"`
+	Privileges []string      `json:"privileges"`
 }
 
 // ToInternalResponse converts a User to an InternalUserResponse.
@@ -91,13 +91,13 @@ func (u *User) ToInternalResponse() InternalUserResponse {
 	}
 
 	return InternalUserResponse{
-		ID:            u.ID,
-		FullName:      u.FullName,
-		Email:         u.Email,
-		Password:      u.Password,
-		Status:        u.Status,
-		RoleName:      u.Role.Name,
-		Privileges:    privileges,
+		ID:         u.ID,
+		FullName:   u.FullName,
+		Email:      u.Email,
+		Password:   u.Password,
+		Status:     u.Status,
+		RoleName:   u.Role.Name,
+		Privileges: privileges,
 	}
 }
 

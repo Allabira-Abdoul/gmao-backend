@@ -66,7 +66,10 @@ func main() {
 	pgadapter.Seed(database)
 
 	// --- JWT Manager ---
-	jwtSecret := getEnv("JWT_SECRET", "gmao-dev-secret-change-in-production")
+	jwtSecret := os.Getenv("JWT_SECRET")
+	if jwtSecret == "" {
+		log.Fatal("JWT_SECRET environment variable is required")
+	}
 	accessExpiry := 15 * time.Minute
 	refreshExpiry := 7 * 24 * time.Hour
 

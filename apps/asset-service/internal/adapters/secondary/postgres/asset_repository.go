@@ -31,7 +31,9 @@ func (r *assetRepository) Delete(ctx context.Context, id uuid.UUID) error {
 
 func (r *assetRepository) FindByID(ctx context.Context, id uuid.UUID) (*domain.Asset, error) {
 	var asset domain.Asset
-	if err := r.db.WithContext(ctx).First(&asset, "id = ?", id).Error; err != nil {
+	// ⚡ Bolt Optimization: Use Preload to eagerly fetch Components and Thresholds
+	// in a single query to eliminate N+1 queries.
+	if err := r.db.WithContext(ctx).Preload("Components").Preload("Thresholds").First(&asset, "id = ?", id).Error; err != nil {
 		return nil, err
 	}
 	return &asset, nil
@@ -39,7 +41,9 @@ func (r *assetRepository) FindByID(ctx context.Context, id uuid.UUID) (*domain.A
 
 func (r *assetRepository) FindByCode(ctx context.Context, code string) (*domain.Asset, error) {
 	var asset domain.Asset
-	if err := r.db.WithContext(ctx).First(&asset, "code = ?", code).Error; err != nil {
+	// ⚡ Bolt Optimization: Use Preload to eagerly fetch Components and Thresholds
+	// in a single query to eliminate N+1 queries.
+	if err := r.db.WithContext(ctx).Preload("Components").Preload("Thresholds").First(&asset, "code = ?", code).Error; err != nil {
 		return nil, err
 	}
 	return &asset, nil
@@ -47,7 +51,9 @@ func (r *assetRepository) FindByCode(ctx context.Context, code string) (*domain.
 
 func (r *assetRepository) FindAll(ctx context.Context) ([]domain.Asset, error) {
 	var assets []domain.Asset
-	if err := r.db.WithContext(ctx).Find(&assets).Error; err != nil {
+	// ⚡ Bolt Optimization: Use Preload to eagerly fetch Components and Thresholds
+	// in a single query to eliminate N+1 queries when fetching all assets.
+	if err := r.db.WithContext(ctx).Preload("Components").Preload("Thresholds").Find(&assets).Error; err != nil {
 		return nil, err
 	}
 	return assets, nil

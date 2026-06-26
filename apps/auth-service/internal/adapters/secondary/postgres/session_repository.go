@@ -30,16 +30,16 @@ func (r *sessionRepository) Login(ctx context.Context, email string, password st
 	if err := r.db.WithContext(ctx).Where("email = ?", email).First(&user).Error; err != nil {
 		return nil, err
 	}
-	
+
 	if user.Password != password {
 		return nil, errors.New("invalid password")
 	}
 	return r.Create(ctx, &domain.Session{
-	UserID:    user.ID,
-	Token:     uuid.New().String(),
-	CreatedAt: time.Now(),
-	ExpiredAt: time.Now().Add(time.Hour * 24 * 7),
-})
+		UserID:    user.ID,
+		Token:     uuid.New().String(),
+		CreatedAt: time.Now(),
+		ExpiredAt: time.Now().Add(time.Hour * 24 * 7),
+	})
 }
 
 func (r *sessionRepository) Logout(ctx context.Context, token string) error {

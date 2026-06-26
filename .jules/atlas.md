@@ -1,0 +1,3 @@
+## 2024-06-25 - Introduce DIP in inter-service communication (auth-service)
+**Learning:** Directly coupling `AuthService` to raw HTTP clients and Consul registry via `discovery.Registry` forces the domain service to handle protocol-specific details (HTTP verbs, headers, status codes) and JSON unmarshaling, violating the Dependency Inversion Principle (DIP).
+**Action:** Always define secondary port interfaces (e.g., `UserClient`) in `internal/core/ports/secondary/` for inter-service communication. Concrete implementations (like `userClient` utilizing Consul) should reside in `internal/adapters/secondary/http/`, isolating external integration concerns from core business logic.

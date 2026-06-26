@@ -10,6 +10,7 @@ import (
 	"time"
 
 	httphandler "backend-gmao/apps/auth-service/internal/adapters/primary/http"
+	httpadapter "backend-gmao/apps/auth-service/internal/adapters/secondary/http"
 	pgadapter "backend-gmao/apps/auth-service/internal/adapters/secondary/postgres"
 	"backend-gmao/apps/auth-service/internal/application/service"
 	"backend-gmao/apps/auth-service/internal/core/domain"
@@ -83,13 +84,14 @@ func main() {
 
 	// --- Repositories (Secondary Adapters) ---
 	sessionRepo := pgadapter.NewSessionRepository(database)
+	userClient := httpadapter.NewUserClient(registry)
 
 	// Setup HTTP Clients for inter-service communication
 	jwtManagerForInternal := auth.NewJWTManager(jwtSecret, time.Minute*5, time.Minute*5) // Short expiry for internal tokens
 	auditClient := audit.NewClient("auth-service", jwtManagerForInternal)
 
 	// Initialize Services
-	authService := service.NewAuthService(sessionRepo, registry, jwtManager, auditClient)
+	authService := service.NewAuthService(sessionRepo, userClient, jwtManager, auditClient)
 
 	// --- Register with Consul ---
 	err = registry.Register(serviceID, serviceName, host, port)

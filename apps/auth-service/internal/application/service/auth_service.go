@@ -2,11 +2,8 @@ package service
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
-	"net/http"
-	"net/url"
 	"strings"
 	"time"
 
@@ -14,7 +11,6 @@ import (
 	"backend-gmao/apps/auth-service/internal/core/ports/secondary"
 	"backend-gmao/pkg/audit"
 	"backend-gmao/pkg/auth"
-	"backend-gmao/pkg/discovery"
 	"github.com/google/uuid"
 )
 
@@ -25,7 +21,7 @@ var (
 
 type AuthService struct {
 	sessionRepo secondary.SessionRepository
-	registry    discovery.Registry
+	userClient  secondary.UserClient
 	jwtManager  *auth.JWTManager
 	auditClient audit.Client
 }
@@ -33,59 +29,26 @@ type AuthService struct {
 // NewAuthService creates a new authentication service.
 func NewAuthService(
 	sessionRepo secondary.SessionRepository,
-	registry discovery.Registry,
+	userClient secondary.UserClient,
 	jwtManager *auth.JWTManager,
 	auditClient audit.Client,
 ) *AuthService {
 	return &AuthService{
 		sessionRepo: sessionRepo,
-		registry:    registry,
+		userClient:  userClient,
 		jwtManager:  jwtManager,
 		auditClient: auditClient,
 	}
 }
 
 func (s *AuthService) CreateSession(ctx context.Context, req domain.CreateSessionRequest) (*domain.SessionResponse, error) {
-	// 1. Discover user-service via Consul
-	addr, err := s.registry.Discover("user-service")
+	// 1. Fetch user by email via user client
+	user, err := s.userClient.GetUserByEmail(ctx, req.Email)
 	if err != nil {
-		return nil, fmt.Errorf("failed to discover user-service: %w", err)
+		return nil, err // Let the client handle the error wrapping
 	}
 
-	// 2. Query user-service/internal/by-email
-	client := &http.Client{Timeout: 5 * time.Second}
-	targetURL := fmt.Sprintf("http://%s/internal/by-email?email=%s", addr, url.QueryEscape(req.Email))
-
-	httpReq, err := http.NewRequestWithContext(ctx, "GET", targetURL, nil)
-	if err != nil {
-		return nil, err
-	}
-	httpReq.Header.Set("X-Internal-Service", "auth-service")
-
-	resp, err := client.Do(httpReq)
-	if err != nil {
-		return nil, fmt.Errorf("failed to call user-service: %w", err)
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode == http.StatusNotFound {
-		return nil, errors.New("invalid email or password")
-	}
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("user-service returned status: %d", resp.StatusCode)
-	}
-
-	var envelope struct {
-		Status string      `json:"status"`
-		Data   domain.User `json:"data"`
-	}
-	if err := json.NewDecoder(resp.Body).Decode(&envelope); err != nil {
-		return nil, fmt.Errorf("failed to decode user response: %w", err)
-	}
-
-	user := envelope.Data
-
-	// 3. Verify user status
+	// 2. Verify user status
 	if user.Status != domain.StatusActive {
 		return nil, fmt.Errorf("account is %s", strings.ToLower(string(user.Status)))
 	}
